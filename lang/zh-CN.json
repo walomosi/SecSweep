@@ -1,0 +1,56 @@
+{
+  "meta": { "code": "zh-CN", "name": "简体中文" },
+  "cli": {
+    "banner": "SecSweep 本机安全体检",
+    "lang": "语言",
+    "scanning": "正在检查",
+    "skipped": "跳过（尚未实现）",
+    "findings": "条发现",
+    "score": "得分",
+    "grade": "等级",
+    "report_html": "HTML 报告",
+    "report_json": "JSON 数据",
+    "report_dir": "输出目录",
+    "fix_dry": "以下动作会被执行（试运行，未改动系统）：",
+    "fix_none": "没有可自动处置的项目。",
+    "readonly": "只读模式，未修改任何系统配置。",
+    "done": "完成",
+    "error": "出错"
+  },
+  "grade": {
+    "A": { "label": "干净", "desc": "未发现需要处理的问题" },
+    "B": { "label": "有暴露面", "desc": "存在可以收敛的配置项" },
+    "C": { "label": "需处置", "desc": "存在明确风险，建议尽快处理" },
+    "D": { "label": "疑似失陷", "desc": "发现高严重度迹象，建议离线取证" }
+  },
+  "severity": { "1": "提示", "2": "低", "3": "中", "4": "高", "5": "严重" },
+  "domains": {
+    "accounts": "账户与权限",
+    "persistence": "持久化点",
+    "services": "服务与驱动",
+    "network": "网络暴露面",
+    "processes": "进程与签名",
+    "hardening": "系统加固",
+    "files": "文件落地",
+    "credentials": "凭据泄露",
+    "events": "日志与事件",
+    "software": "软件面",
+    "baseline": "基线比对"
+  },
+  "report": {
+    "title": "本机安全体检报告",
+    "generated": "生成时间",
+    "host": "主机",
+    "score": "得分",
+    "grade": "等级",
+    "total": "共 {0} 条发现",
+    "no_issues": "未发现问题",
+    "not_implemented": "本域检查尚未实现",
+    "evidence": "证据",
+    "why": "为什么要管",
+    "fix": "处置建议",
+    "privacy": "本报告在本地生成，未向任何外部地址发送数据。",
+    "masked": "敏感信息已脱敏（加 -IncludeRaw 可关闭）",
+    "unknown": "（未知规则）"
+  }
+}

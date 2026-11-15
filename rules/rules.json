@@ -1,0 +1,329 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "AC-001",
+      "domain": "accounts",
+      "severity": 4,
+      "reversible": false,
+      "title": { "zh": "陌生本地账户", "en": "Unexpected local account" },
+      "why": { "zh": "白名单外的本地账户，常见于入侵后留后门。", "en": "Local accounts outside the allowlist usually mean a planted backdoor." },
+      "fix": { "zh": "先确认来源，无主则禁用：Disable-LocalUser。", "en": "Confirm the owner first; disable if unclaimed." }
+    },
+    {
+      "id": "AC-002",
+      "domain": "accounts",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "Guest 账户启用", "en": "Guest account enabled" },
+      "why": { "zh": "无密码匿名入口，默认应禁用。", "en": "Anonymous entry point; should stay disabled." },
+      "fix": { "zh": "net user Guest /active:no", "en": "net user Guest /active:no" }
+    },
+    {
+      "id": "AC-003",
+      "domain": "accounts",
+      "severity": 4,
+      "reversible": false,
+      "title": { "zh": "管理员组成员超出预期", "en": "Administrators group has extra members" },
+      "why": { "zh": "提权第一步通常是加管理员，成员越多面越大。", "en": "Privilege escalation starts by joining this group." },
+      "fix": { "zh": "核对每个管理员账户的来历，移除无主的。", "en": "Verify each admin, remove the unowned ones." }
+    },
+    {
+      "id": "AC-004",
+      "domain": "accounts",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "UAC 被关闭或降级", "en": "UAC disabled or lowered" },
+      "why": { "zh": "关掉 UAC 等于给所有提权动作免签。", "en": "UAC off lets every elevation pass silently." },
+      "fix": { "zh": "EnableLUA 恢复为 1，ConsentPromptBehaviorAdmin 恢复为 5。", "en": "Restore EnableLUA=1 and ConsentPromptBehaviorAdmin=5." }
+    },
+    {
+      "id": "AC-005",
+      "domain": "accounts",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "密码策略过弱", "en": "Weak password policy" },
+      "why": { "zh": "最短长度小于 8 或锁定阈值为 0 时，爆破成本极低。", "en": "Min length under 8 or lockout at 0 makes brute force cheap." },
+      "fix": { "zh": "net accounts /minpwlen:8 /lockoutthreshold:5", "en": "net accounts /minpwlen:8 /lockoutthreshold:5" }
+    },
+    {
+      "id": "PS-001",
+      "domain": "persistence",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "自启动项指向不存在的文件", "en": "Autorun entry points to a missing file" },
+      "why": { "zh": "卸载残留，无害但占位；也可能是有东西被删了没清干净。", "en": "Leftover from an uninstall, or debris after a cleanup." },
+      "fix": { "zh": "确认无用后删除对应注册表值。", "en": "Delete the registry value once confirmed unused." }
+    },
+    {
+      "id": "PS-002",
+      "domain": "persistence",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "自启动项只有裸文件名", "en": "Autorun entry is a bare filename" },
+      "why": { "zh": "没有绝对路径就会按 PATH 搜索，任何同名文件都能顶替。", "en": "No absolute path means PATH resolution; any same-named file can hijack it." },
+      "fix": { "zh": "删除该注册表值，或补上绝对路径。", "en": "Delete the value, or pin it to an absolute path." }
+    },
+    {
+      "id": "PS-003",
+      "domain": "persistence",
+      "severity": 5,
+      "reversible": false,
+      "title": { "zh": "计划任务从用户可写目录运行", "en": "Scheduled task runs from a user-writable directory" },
+      "why": { "zh": "任务以 SYSTEM 运行时，替换它指向的 exe 就直接拿到最高权限。", "en": "A SYSTEM task plus a replaceable binary equals free privilege escalation." },
+      "fix": { "zh": "把任务指向系统目录下的副本，或收紧目录 ACL。", "en": "Point the task at a system path, or tighten the directory ACL." }
+    },
+    {
+      "id": "PS-004",
+      "domain": "persistence",
+      "severity": 5,
+      "reversible": false,
+      "title": { "zh": "非系统 WMI 永久订阅", "en": "Non-system WMI permanent subscription" },
+      "why": { "zh": "无文件落地的持久化，事件触发即执行，常规杀软容易漏。", "en": "Fileless persistence triggered by events; commonly missed by AV." },
+      "fix": { "zh": "导出 consumer 内容确认来源，再删除 filter 与 binding。", "en": "Dump the consumer, then remove filter and binding." }
+    },
+    {
+      "id": "PS-005",
+      "domain": "persistence",
+      "severity": 5,
+      "reversible": true,
+      "title": { "zh": "Winlogon 的 Shell 或 Userinit 被改", "en": "Winlogon Shell or Userinit modified" },
+      "why": { "zh": "登录即执行，改了就等于把后门焊在登录流程里。", "en": "Runs at logon; a change welds the backdoor into the login path." },
+      "fix": { "zh": "Shell 恢复 explorer.exe，Userinit 恢复 userinit.exe。", "en": "Restore Shell=explorer.exe and Userinit=userinit.exe." }
+    },
+    {
+      "id": "PS-006",
+      "domain": "persistence",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "IFEO 劫持", "en": "Image File Execution Options hijack" },
+      "why": { "zh": "给程序挂 Debugger，等于每次启动都先跑别的代码。", "en": "A Debugger entry runs foreign code before the real binary." },
+      "fix": { "zh": "删除对应子键的 Debugger 值。", "en": "Remove the Debugger value under the affected subkey." }
+    },
+    {
+      "id": "PS-007",
+      "domain": "persistence",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "AppInit_DLLs 非空", "en": "AppInit_DLLs is not empty" },
+      "why": { "zh": "每个加载 user32 的进程都会带它，是老牌注入位。", "en": "Every user32-loading process pulls it in; classic injection slot." },
+      "fix": { "zh": "清空 AppInit_DLLs 并确认 LoadAppInit_DLLs=0。", "en": "Clear AppInit_DLLs and set LoadAppInit_DLLs=0." }
+    },
+    {
+      "id": "PS-008",
+      "domain": "persistence",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "启动文件夹存在可执行文件", "en": "Executable in a Startup folder" },
+      "why": { "zh": "位置好找、容易被塞东西。", "en": "Easy to find, easy to drop something into." },
+      "fix": { "zh": "核对来源，非本人放置的移走。", "en": "Verify origin; move out anything not placed by you." }
+    },
+    {
+      "id": "SV-001",
+      "domain": "services",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "服务指向不存在的文件", "en": "Service points to a missing binary" },
+      "why": { "zh": "卸载残留，白占服务表。", "en": "Uninstall debris occupying the service table." },
+      "fix": { "zh": "sc delete 服务名。", "en": "sc delete <name>" }
+    },
+    {
+      "id": "SV-002",
+      "domain": "services",
+      "severity": 5,
+      "reversible": false,
+      "title": { "zh": "服务二进制在用户可写目录", "en": "Service binary sits in a user-writable path" },
+      "why": { "zh": "能写这个目录的人就能用服务权限执行任意代码。", "en": "Whoever can write there executes code as the service account." },
+      "fix": { "zh": "迁到 Program Files 下，或收紧 ACL。", "en": "Relocate under Program Files, or tighten the ACL." }
+    },
+    {
+      "id": "SV-003",
+      "domain": "services",
+      "severity": 4,
+      "reversible": false,
+      "title": { "zh": "非微软进程注册成 svchost 组服务", "en": "Non-Microsoft process registered as a svchost group service" },
+      "why": { "zh": "挤进 svchost 是为了混在系统进程里不被注意。", "en": "Hiding inside svchost is camouflage by design." },
+      "fix": { "zh": "确认厂商后决定保留；无主则删除该服务。", "en": "Keep only if the vendor is known; otherwise delete." }
+    },
+    {
+      "id": "SV-004",
+      "domain": "services",
+      "severity": 4,
+      "reversible": false,
+      "title": { "zh": "加载了未签名内核驱动", "en": "Unsigned kernel driver loaded" },
+      "why": { "zh": "驱动层可以绕过所有用户态检查。", "en": "Kernel layer bypasses every user-mode check." },
+      "fix": { "zh": "核对文件路径与厂商，来源不明则停用并隔离文件。", "en": "Verify path and vendor; disable and quarantine if unknown." }
+    },
+    {
+      "id": "SV-005",
+      "domain": "services",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "服务 ImagePath 含相对路径或未加引号", "en": "Service ImagePath is relative or unquoted" },
+      "why": { "zh": "未加引号的带空格路径可以被同名目录里的程序抢先执行。", "en": "An unquoted path with spaces can be hijacked by a lookalike binary." },
+      "fix": { "zh": "给 ImagePath 补上引号与绝对路径。", "en": "Quote it and make it absolute." }
+    },
+    {
+      "id": "NW-001",
+      "domain": "network",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "RDP 监听在所有网卡", "en": "RDP listening on all interfaces" },
+      "why": { "zh": "远程桌面是全内网可达的高价值入口。", "en": "Remote desktop is a high-value entry reachable from the whole LAN." },
+      "fix": { "zh": "关闭 RDP，或改绑回环 + 防火墙限定来源。", "en": "Disable RDP, or bind to loopback and restrict sources." }
+    },
+    {
+      "id": "NW-002",
+      "domain": "network",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "SMBv1 已启用", "en": "SMBv1 enabled" },
+      "why": { "zh": "永恒之蓝这一代漏洞全靠它。", "en": "The EternalBlue family all leans on it." },
+      "fix": { "zh": "Disable-WindowsOptionalFeature SMB1Protocol。", "en": "Disable-WindowsOptionalFeature SMB1Protocol." }
+    },
+    {
+      "id": "NW-003",
+      "domain": "network",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "NFS 服务在运行", "en": "NFS service running" },
+      "why": { "zh": "2049 与 111 一起对外，多数 Windows 主机根本用不到。", "en": "Exposes 2049 and 111 for a feature most hosts never use." },
+      "fix": { "zh": "停止并禁用 NfsService 与 NfsClnt。", "en": "Stop and disable NfsService and NfsClnt." }
+    },
+    {
+      "id": "NW-004",
+      "domain": "network",
+      "severity": 2,
+      "reversible": false,
+      "title": { "zh": "非常规端口对外监听", "en": "Uncommon port listening externally" },
+      "why": { "zh": "多为第三方服务把监听绑到了 0.0.0.0。", "en": "Usually a third-party service binding to 0.0.0.0." },
+      "fix": { "zh": "确认软件后改绑 127.0.0.1。", "en": "Rebind to 127.0.0.1 once the software is identified." }
+    },
+    {
+      "id": "NW-005",
+      "domain": "network",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "防火墙配置档被关闭", "en": "A firewall profile is off" },
+      "why": { "zh": "关一个档就等于少一道网。", "en": "One profile off means one layer gone." },
+      "fix": { "zh": "Set-NetFirewallProfile -Enabled True。", "en": "Set-NetFirewallProfile -Enabled True." }
+    },
+    {
+      "id": "PR-001",
+      "domain": "processes",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "运行中的进程未签名", "en": "Running process is unsigned" },
+      "why": { "zh": "自制工具也走这条路，但需要逐个确认来源。", "en": "Homegrown tools also land here; verify each one." },
+      "fix": { "zh": "核对路径与厂商，非本人软件则停掉并隔离。", "en": "Check path and vendor; stop and quarantine unknown ones." }
+    },
+    {
+      "id": "PR-002",
+      "domain": "processes",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "进程从 Temp / AppData / 桌面运行", "en": "Process runs from Temp, AppData or Desktop" },
+      "why": { "zh": "正规程序装到系统目录，从可写目录起的是另一回事。", "en": "Real installers live in system paths; writable paths mean something else." },
+      "fix": { "zh": "确认来源，可疑则结束进程并保留样本。", "en": "Verify origin; kill and preserve the sample if suspicious." }
+    },
+    {
+      "id": "PR-003",
+      "domain": "processes",
+      "severity": 4,
+      "reversible": false,
+      "title": { "zh": "进程路径不存在", "en": "Process path no longer exists" },
+      "why": { "zh": "运行中却查不到文件，多为文件自删除型行为。", "en": "Still running but the file is gone: typical self-delete behaviour." },
+      "fix": { "zh": "记录 PID 与父进程，先 dump 再结束。", "en": "Record PID and parent, dump then kill." }
+    },
+    {
+      "id": "HD-001",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "PowerShell 脚本块日志未开", "en": "PowerShell script block logging off" },
+      "why": { "zh": "没有它，内存马和编码命令基本不留痕。", "en": "Without it, obfuscated commands leave no trace." },
+      "fix": { "zh": "开 ScriptBlockLogging 与 ModuleLogging。", "en": "Enable ScriptBlockLogging and ModuleLogging." }
+    },
+    {
+      "id": "HD-002",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "登录失败审计缺失", "en": "Failure audit missing" },
+      "why": { "zh": "4625 不记录，爆破就没声音。", "en": "No 4625 means brute force is silent." },
+      "fix": { "zh": "auditpol 打开 Logon 的 failure。", "en": "auditpol enable Logon failure." }
+    },
+    {
+      "id": "HD-003",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "LLMNR 启用", "en": "LLMNR enabled" },
+      "why": { "zh": "可被投毒劫持认证，内网渗透常用。", "en": "Poisonable to relay credentials; a LAN staple." },
+      "fix": { "zh": "组策略关闭 EnableMulticast。", "en": "Disable EnableMulticast via policy." }
+    },
+    {
+      "id": "FS-001",
+      "domain": "files",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "临时目录有近期可执行文件", "en": "Recent executable in a temp directory" },
+      "why": { "zh": "落地即执行是最常见的投递方式。", "en": "Drop-and-run is the most common delivery." },
+      "fix": { "zh": "取哈希核实来源，未确认前不要删除。", "en": "Hash it, verify origin, do not delete before confirming." }
+    },
+    {
+      "id": "FS-002",
+      "domain": "files",
+      "severity": 2,
+      "reversible": false,
+      "title": { "zh": "桌面存在可执行文件", "en": "Executable on the Desktop" },
+      "why": { "zh": "绿色版软件常驻桌面，也方便别人投递。", "en": "Portable apps live here, and so do deliveries." },
+      "fix": { "zh": "逐个确认是不是自己放的。", "en": "Confirm each one is yours." }
+    },
+    {
+      "id": "CR-001",
+      "domain": "credentials",
+      "severity": 4,
+      "reversible": false,
+      "title": { "zh": "疑似明文凭据文件", "en": "Possible plaintext credential file" },
+      "why": { "zh": "密码落在文本里，等于把钥匙放门口。", "en": "Passwords in plain text put the key at the door." },
+      "fix": { "zh": "迁移进凭据管理器，清掉原文件。", "en": "Move into Credential Manager, delete the file." }
+    },
+    {
+      "id": "EV-001",
+      "domain": "events",
+      "severity": 5,
+      "reversible": false,
+      "title": { "zh": "安全日志被清除", "en": "Security log was cleared" },
+      "why": { "zh": "1102 事件出现，几乎等于有人擦过现场。", "en": "An 1102 almost always means someone wiped the scene." },
+      "fix": { "zh": "立即留存剩余日志并排查清除时间点前后动作。", "en": "Preserve remaining logs, review actions around that timestamp." }
+    },
+    {
+      "id": "EV-002",
+      "domain": "events",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "异常网络登录", "en": "Unusual network logon" },
+      "why": { "zh": "4624 类型 3/10 出现在非预期来源。", "en": "Type 3 or 10 logons from unexpected sources." },
+      "fix": { "zh": "核对源 IP 与账户，必要时改密。", "en": "Verify source and account; rotate credentials if needed." }
+    },
+    {
+      "id": "SW-001",
+      "domain": "software",
+      "severity": 2,
+      "reversible": false,
+      "title": { "zh": "已安装程序缺少签名信息", "en": "Installed program lacks publisher info" },
+      "why": { "zh": "发布者为空的条目多半来路不正。", "en": "Blank publisher usually means uncertain provenance." },
+      "fix": { "zh": "核对安装来源，必要时卸载。", "en": "Verify the install source, uninstall if unknown." }
+    },
+    {
+      "id": "BL-001",
+      "domain": "baseline",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "与基线相比出现新增持久化项", "en": "New persistence item versus baseline" },
+      "why": { "zh": "基线之后新增的东西，才是真正要看的差异。", "en": "The delta after the baseline is what actually matters." },
+      "fix": { "zh": "逐条确认新增项是否是本人安装造成。", "en": "Confirm each new item came from your own install." }
+    }
+  ]
+}

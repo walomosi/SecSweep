@@ -1,0 +1,56 @@
+{
+  "meta": { "code": "en-US", "name": "English" },
+  "cli": {
+    "banner": "SecSweep local security check",
+    "lang": "Language",
+    "scanning": "Checking",
+    "skipped": "skipped (not implemented)",
+    "findings": "findings",
+    "score": "Score",
+    "grade": "Grade",
+    "report_html": "HTML report",
+    "report_json": "JSON data",
+    "report_dir": "Output dir",
+    "fix_dry": "Actions that would run (dry run, nothing changed):",
+    "fix_none": "Nothing to auto-remediate.",
+    "readonly": "Read-only mode, no system change was made.",
+    "done": "Done",
+    "error": "Error"
+  },
+  "grade": {
+    "A": { "label": "Clean", "desc": "Nothing needs attention" },
+    "B": { "label": "Exposed", "desc": "Some settings can be tightened" },
+    "C": { "label": "Action needed", "desc": "Real risk present, fix soon" },
+    "D": { "label": "Possible compromise", "desc": "High-severity signs, do offline forensics" }
+  },
+  "severity": { "1": "info", "2": "low", "3": "medium", "4": "high", "5": "critical" },
+  "domains": {
+    "accounts": "Accounts",
+    "persistence": "Persistence",
+    "services": "Services & drivers",
+    "network": "Network exposure",
+    "processes": "Processes & signatures",
+    "hardening": "Hardening",
+    "files": "Dropped files",
+    "credentials": "Credentials",
+    "events": "Logs & events",
+    "software": "Software",
+    "baseline": "Baseline"
+  },
+  "report": {
+    "title": "Local Security Report",
+    "generated": "Generated",
+    "host": "Host",
+    "score": "Score",
+    "grade": "Grade",
+    "total": "{0} findings",
+    "no_issues": "No issues found",
+    "not_implemented": "This domain is not implemented yet",
+    "evidence": "Evidence",
+    "why": "Why it matters",
+    "fix": "Fix",
+    "privacy": "Generated locally. Nothing was sent to any remote address.",
+    "masked": "Sensitive values masked (use -IncludeRaw to disable)",
+    "unknown": "(unknown rule)"
+  }
+}
