@@ -1,0 +1,7 @@
+# 报告和基线都带本机信息，不进版本库
+out/
+rules/baseline.json
+*.bak
+*.log
+*.tmp
+.vscode/*.local.json

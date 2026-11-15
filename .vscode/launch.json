@@ -1,0 +1,37 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "SecSweep (pwsh)",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/src/SecSweep.ps1",
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "SecSweep 中文 + 全域",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/src/SecSweep.ps1",
+      "args": ["-Lang", "zh-CN"],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "SecSweep 英文 + 只跑三个域",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/src/SecSweep.ps1",
+      "args": ["-Lang", "en-US", "-Domains", "accounts,persistence,services"],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "SecSweep 显示原始值（不脱敏）",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${workspaceFolder}/src/SecSweep.ps1",
+      "args": ["-IncludeRaw"],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
