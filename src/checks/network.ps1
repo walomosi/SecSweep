@@ -21,15 +21,12 @@ function Get-ProcessNameByPid {
     return [string]$p.ProcessName
 }
 
-function Invoke-CheckNetwork {
-    param($Ctx)
+function Get-ListenerFindings {
+    param($Whitelist)
 
     $found = @()
-    $wl = $Ctx.Whitelist
-    $listeners = @(Get-ListeningRows)
-
     $seenPort = @{}
-    foreach ($l in $listeners) {
+    foreach ($l in (Get-ListeningRows)) {
         $exposed = ($l.Address -eq '0.0.0.0' -or $l.Address -eq '::' -or $l.Address -eq '[::]')
         if (-not $exposed) { continue }
         # 双栈会把同一个端口报两遍，按端口去重
@@ -49,7 +46,7 @@ function Invoke-CheckNetwork {
             continue
         }
 
-        if (@($wl.known_listen_ports) -notcontains $l.Port) {
+        if (@($Whitelist.known_listen_ports) -notcontains $l.Port) {
             $found += [pscustomobject]@{
                 RuleId   = 'NW-004'
                 Domain   = 'network'
@@ -59,6 +56,15 @@ function Invoke-CheckNetwork {
             }
         }
     }
+    return $found
+}
+
+function Invoke-CheckNetwork {
+    param($Ctx)
+
+    $found = @()
+    $wl = $Ctx.Whitelist
+    $found += @(Get-ListenerFindings $wl)
 
     $smb = Get-SmbServerConfiguration -ErrorAction SilentlyContinue
     if ($smb -and $smb.EnableSMB1Protocol) {
