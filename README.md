@@ -35,6 +35,7 @@ pwsh -File src\SecSweep.ps1 -Lang zh-CN
 | `-OutDir .\out` | 报告输出目录 |
 | `-Fix` | 列出可逆处置动作（当前只列清单，不执行） |
 | `-IncludeRaw` | 关闭脱敏，报告里保留真实用户名和 IP |
+| `-SaveBaseline` | 把当前账户 / Run 键 / 服务 / 监听端口存成基线快照，写完就退 |
 
 ## 隐私这块是怎么做到的
 
@@ -60,21 +61,29 @@ pwsh -File src\SecSweep.ps1 -Lang zh-CN
 
 ## 现在实现到哪一步
 
-| 域 | 状态 |
-| --- | --- |
-| accounts 账户与权限 | 已实现 |
-| persistence 持久化点 | 已实现 |
-| services 服务与驱动 | 已实现 |
-| network 网络暴露面 | 未实现 |
-| processes 进程与签名 | 未实现 |
-| hardening 系统加固 | 未实现 |
-| files 文件落地 | 未实现 |
-| credentials 凭据泄露 | 未实现 |
-| events 日志与事件 | 未实现 |
-| software 软件面 | 未实现 |
-| baseline 基线比对 | 未实现 |
+11 个域都在跑，一轮 16 秒左右（这台机器是 1 核）。
 
-没实现的域会打印"跳过"，不会报错。
+| 域 | 看什么 |
+| --- | --- |
+| accounts | 陌生账户、Guest、管理员组多成员、UAC |
+| persistence | Run 键、计划任务、WMI 订阅、Winlogon、IFEO、AppInit、启动文件夹 |
+| services | 服务 exe 缺失、指向可写目录、注册表里没声明的 svchost 组 |
+| network | RDP 全网卡、SMBv1、NFS、非常规端口、防火墙档关闭 |
+| processes | Temp / 桌面跑的进程、用户目录下未签名的进程 |
+| hardening | 脚本块日志、登录失败审计、LLMNR |
+| files | 临时目录近 30 天的 exe、桌面上的可执行文件 |
+| credentials | 桌面 / 文档 / 下载里文件名像凭据的文件（只看名字，不读内容） |
+| events | 安全日志被清空（1102）、外网来源的网络登录 |
+| software | 装了但 Publisher 是空的程序 |
+| baseline | 和快照比对账户、Run、服务、监听端口的新增与变化 |
+
+基线要先自己存一份：
+
+```
+.\SecSweep.ps1 -SaveBaseline
+```
+
+不存的话 baseline 域什么都不报——没基线就没什么可比的，不猜。
 
 ## 已知限制
 
