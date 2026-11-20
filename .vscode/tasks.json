@@ -2,29 +2,29 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "体检（中文，默认）",
+      "label": "sweep: en-US",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/src/SecSweep.ps1", "-Lang", "zh-CN"],
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/src/SecSweep.ps1", "-Lang", "en-US"],
       "group": { "kind": "build", "isDefault": true },
       "problemMatcher": []
     },
     {
-      "label": "体检（英文）",
+      "label": "sweep: zh-CN",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/src/SecSweep.ps1", "-Lang", "en-US"],
-      "problemMatcher": []
-    },
-    {
-      "label": "体检（Windows PowerShell 5.1 兼容性）",
-      "type": "shell",
-      "command": "powershell.exe",
       "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/src/SecSweep.ps1", "-Lang", "zh-CN"],
       "problemMatcher": []
     },
     {
-      "label": "打开报告目录",
+      "label": "sweep: PS 5.1 compat",
+      "type": "shell",
+      "command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/src/SecSweep.ps1", "-Lang", "en-US"],
+      "problemMatcher": []
+    },
+    {
+      "label": "open reports",
       "type": "shell",
       "command": "explorer",
       "args": ["${workspaceFolder}/out"],

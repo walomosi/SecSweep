@@ -10,7 +10,7 @@
       "cwd": "${workspaceFolder}"
     },
     {
-      "name": "SecSweep 中文 + 全域",
+      "name": "SecSweep (zh-CN)",
       "type": "PowerShell",
       "request": "launch",
       "script": "${workspaceFolder}/src/SecSweep.ps1",
@@ -18,7 +18,7 @@
       "cwd": "${workspaceFolder}"
     },
     {
-      "name": "SecSweep 英文 + 只跑三个域",
+      "name": "SecSweep (en-US, three domains)",
       "type": "PowerShell",
       "request": "launch",
       "script": "${workspaceFolder}/src/SecSweep.ps1",
@@ -26,7 +26,7 @@
       "cwd": "${workspaceFolder}"
     },
     {
-      "name": "SecSweep 显示原始值（不脱敏）",
+      "name": "SecSweep (raw values, no masking)",
       "type": "PowerShell",
       "request": "launch",
       "script": "${workspaceFolder}/src/SecSweep.ps1",
