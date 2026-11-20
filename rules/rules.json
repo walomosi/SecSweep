@@ -1,4 +1,4 @@
-{
+﻿{
   "version": 1,
   "rules": [
     {
@@ -324,6 +324,96 @@
       "title": { "zh": "与基线相比出现新增持久化项", "en": "New persistence item versus baseline" },
       "why": { "zh": "基线之后新增的东西，才是真正要看的差异。", "en": "The delta after the baseline is what actually matters." },
       "fix": { "zh": "逐条确认新增项是否是本人安装造成。", "en": "Confirm each new item came from your own install." }
+    },
+    {
+      "id": "PS-009",
+      "domain": "persistence",
+      "severity": 5,
+      "reversible": true,
+      "title": { "zh": "打印机处理器加载第三方 DLL", "en": "Print processor loads a third-party DLL" },
+      "why": { "zh": "spoolsv 在登录时加载这里的 DLL，是已知的持久化加载点。", "en": "spoolsv loads this DLL at logon; a known persistence loader." },
+      "fix": { "zh": "确认来源，非必要则删除对应的 Print Processors 子键。", "en": "Confirm the source; delete the Print Processors subkey if unneeded." }
+    },
+    {
+      "id": "PS-010",
+      "domain": "persistence",
+      "severity": 5,
+      "reversible": true,
+      "title": { "zh": "AppCertDlls 注入额外 DLL", "en": "AppCertDlls injects an extra DLL" },
+      "why": { "zh": "每创建一个进程都加载这里的 DLL，影响范围覆盖所有程序。", "en": "Loaded on every process creation, so it affects everything." },
+      "fix": { "zh": "清空该键下所有值。", "en": "Clear every value under this key." }
+    },
+    {
+      "id": "PS-011",
+      "domain": "persistence",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "服务失败时执行外部程序", "en": "Service runs an external program on failure" },
+      "why": { "zh": "FailureActions 可以指定崩溃后运行的程序，被用来做触发式持久化。", "en": "FailureActions can launch a program on crash; used for trigger-based persistence." },
+      "fix": { "zh": "检查指向的程序，非运维需要则清除该配置。", "en": "Check what it points at, clear it unless ops genuinely need it." }
+    },
+    {
+      "id": "PS-012",
+      "domain": "persistence",
+      "severity": 5,
+      "reversible": false,
+      "title": { "zh": "计划任务使用 COM 处理器", "en": "Scheduled task uses a COM handler" },
+      "why": { "zh": "COM handler 不显示命令行，常规排查最容易整片漏过。", "en": "COM handlers expose no command line, which is why they get missed." },
+      "fix": { "zh": "确认任务来源，删除非自建任务。", "en": "Confirm the source, remove tasks you did not create." }
+    },
+    {
+      "id": "PS-013",
+      "domain": "persistence",
+      "severity": 5,
+      "reversible": true,
+      "title": { "zh": "Winlogon 存在 Notify DLL", "en": "Winlogon has a Notify DLL" },
+      "why": { "zh": "登录时由 winlogon 加载，劫持后直接拿到登录上下文。", "en": "Loaded by winlogon at logon; hijacking it hands over the logon context." },
+      "fix": { "zh": "非系统组件一律删除对应子键。", "en": "Delete the subkey unless it is a known system component." }
+    },
+    {
+      "id": "PS-014",
+      "domain": "persistence",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "Active Setup 指向可写目录", "en": "Active Setup points at a writable path" },
+      "why": { "zh": "用户首次登录会执行 StubPath，新建账户时也会跟着跑一遍。", "en": "StubPath runs on every user's first logon, including accounts created later." },
+      "fix": { "zh": "核对 StubPath 来源，删除非微软条目。", "en": "Check the StubPath source; remove non-Microsoft entries." }
+    },
+    {
+      "id": "PS-015",
+      "domain": "persistence",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "ShellServiceObjectDelayLoad 被写入", "en": "ShellServiceObjectDelayLoad has entries" },
+      "why": { "zh": "explorer 启动时按 CLSID 加载组件，写这里等于随桌面一起起。", "en": "explorer loads components here by CLSID, so this rides along with the desktop." },
+      "fix": { "zh": "确认 CLSID 属于已知组件，否则清空该值。", "en": "Confirm the CLSID is a known component, otherwise clear the value." }
+    },
+    {
+      "id": "PS-016",
+      "domain": "persistence",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "存在浏览器助手对象", "en": "Browser helper object present" },
+      "why": { "zh": "BHO 随浏览器加载，是广告件和窃取插件的常用位置。", "en": "BHOs load with the browser; common home for adware and stealers." },
+      "fix": { "zh": "核对 CLSID 对应的 DLL，非必要则删除。", "en": "Check which DLL the CLSID resolves to; remove if not needed." }
+    },
+    {
+      "id": "PS-017",
+      "domain": "persistence",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "Netsh 加载外部 DLL", "en": "Netsh loads an external DLL" },
+      "why": { "zh": "netsh 启动时加载 helper DLL，位于系统目录之外就可疑。", "en": "netsh loads helper DLLs; one outside System32 is suspicious." },
+      "fix": { "zh": "核对 DLL 路径，删除非系统条目。", "en": "Check the DLL path, remove non-system entries." }
+    },
+    {
+      "id": "PS-018",
+      "domain": "persistence",
+      "severity": 5,
+      "reversible": false,
+      "title": { "zh": "LSA 通知包包含未知模块", "en": "LSA notification packages include an unknown module" },
+      "why": { "zh": "lsass 加载这些 DLL，权限最高，一旦被劫持等于交出了凭据。", "en": "lsass loads these at the highest privilege; hijacking one hands over credentials." },
+      "fix": { "zh": "只保留 scecli、rassfm、kdcsvc，其余移除后重启。", "en": "Keep only scecli, rassfm, kdcsvc; remove the rest and reboot." }
     }
   ]
 }
