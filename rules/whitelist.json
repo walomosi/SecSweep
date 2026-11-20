@@ -1,76 +1,21 @@
 {
-  "version": 1,
-  "note": "本机实测确认过的正常噪音。换机器时按实际情况增删，不要照抄。",
-  "accounts": ["Administrator", "cloudbase-init", "DefaultAccount", "Guest", "WDAGUtilityAccount"],
+  "version": 2,
+  "note": "Generic Windows noise only. Anything vendor- or machine-specific belongs in whitelist.local.json.",
+  "accounts": ["Administrator", "DefaultAccount", "Guest", "WDAGUtilityAccount"],
   "path_prefixes": [
     "C:\\Program Files\\",
     "C:\\Program Files (x86)\\",
     "C:\\Windows\\System32\\",
     "C:\\Windows\\SysWOW64\\",
-    "C:\\Windows\\",
-    "C:\\ProgramData\\Seewo\\",
-    "C:\\Program Files (x86)\\ctyun\\",
-    "C:\\Program Files (x86)\\Huorong\\",
-    "C:\\Program Files\\Cloudbase Solutions\\"
+    "C:\\Windows\\"
   ],
-  "service_names": [
-    "AndrowsSvr",
-    "AppMarketSvc",
-    "BalloonService",
-    "clinkte_service",
-    "cloud-sync-server",
-    "CloudPrinterClientService",
-    "cloudshare_service",
-    "DouyinElevationService",
-    "douyin_performance_service",
-    "EasiUpdate",
-    "EasiUpdate3",
-    "EasiUpdate3Protect",
-    "EpicGamesUpdater",
-    "fp2psrv"
-  ],
+  "service_names": [],
   "task_paths": [
-    "\\AliProctectUpdate",
-    "\\check_report_img_daily",
-    "\\check_report_img_onstart",
-    "\\check_report_img_random",
-    "\\DoubaoUpdateTaskMachineUA",
-    "\\ecloud_update_agent_detect",
-    "\\ecloud_update_task_launch",
-    "\\MicrosoftEdgeUpdateTaskMachineCore",
-    "\\MicrosoftEdgeUpdateTaskMachineUA",
-    "\\User_Feed_Synchronization-",
-    "\\WpsUpdateLogonTask_",
-    "\\WpsUpdateTask_",
-    "\\WpsWakeWnsLogonTask",
-    "\\DouyinUser\\",
-    "\\EasiUpdate3\\",
-    "\\QuarkUpdaterUser\\"
+    "\\Microsoft\\Windows\\"
   ],
-  "process_names": [
-    "clink_agent",
-    "clink_agent_data",
-    "clink_agent_device",
-    "clinktetool",
-    "clinkteTray",
-    "clink_dect",
-    "CtyunDesktopDrtSrv",
-    "CtyunDesktopMaster",
-    "CtyunDesktopMasterSrv",
-    "ecloudAiAssistant",
-    "ecloudDisk",
-    "HipsDaemon",
-    "HipsTray",
-    "IDMan",
-    "blnsvr",
-    "cloudshare",
-    "updater"
-  ],
-  "unsigned_ok": [
-    "IDMan",
-    "blnsvr"
-  ],
+  "process_names": [],
+  "unsigned_ok": [],
   "known_listen_ports": [
-    135, 139, 445, 3389, 1035, 1099, 111, 2049, 49664, 49665, 49666, 49667, 49668, 39171, 39172
+    135, 139, 445, 3389, 49664, 49665, 49666, 49667, 49668
   ]
 }
