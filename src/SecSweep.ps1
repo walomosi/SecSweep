@@ -15,6 +15,7 @@ param(
     [ValidateSet('auto', 'zh-CN', 'en-US')][string]$Lang = 'auto',
     [string[]]$Domains = @('accounts', 'persistence', 'services', 'network', 'processes', 'hardening', 'files', 'credentials', 'events', 'software', 'baseline'),
     [switch]$Fix,
+    [switch]$Apply,
     [switch]$IncludeRaw,
     [switch]$SaveBaseline
 )
@@ -92,13 +93,26 @@ Write-Host ("{0}: {1}" -f $uiText.cli.report_html, $report.HtmlPath)
 Write-Host ("{0}: {1}" -f $uiText.cli.report_json, $report.JsonPath)
 
 if ($Fix) {
-    $actions = @(Get-FixCandidates -Ctx $ctx -Findings $findings)
-    if ($actions.Count -eq 0) {
+    . (Join-Path $libDir 'fix.ps1')
+    $plan = @(New-FixPlan -Findings $findings)
+    if ($plan.Count -eq 0) {
         Write-Host $uiText.cli.fix_none
     }
     else {
-        Write-Host $uiText.cli.fix_dry
-        foreach ($a in $actions) { Write-Host ("  - [{0}] {1}" -f $a.rule, $a.action) }
+        Write-Host $uiText.cli.fix_preview
+        foreach ($item in $plan) {
+            Write-Host ("  - [{0}] {1}  [{2}]" -f $item.RuleId, $item.Description, $item.PreState)
+        }
+        if (-not $Apply) {
+            Write-Host $uiText.cli.fix_need_apply
+        }
+        else {
+            $applied = @(Invoke-FixApply -Plan $plan)
+            $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+            $undoPath = New-UndoScript -Applied $applied -OutDir $targetOut -Stamp $stamp
+            Write-Host ($uiText.cli.fix_applied -f $applied.Count)
+            Write-Host ($uiText.cli.fix_undo -f $undoPath)
+        }
     }
 }
 else {
