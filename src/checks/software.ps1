@@ -1,4 +1,4 @@
-﻿# 软件面：装了但说不清 publisher 的程序。
+﻿# Software surface: things installed without a publisher attached.
 
 function Get-InstalledPrograms {
     $roots = @(
@@ -31,7 +31,7 @@ function Invoke-CheckSoftware {
             Domain   = 'software'
             Severity = 2
             Subject  = $p.Name
-            Evidence = ("Publisher 为空，版本 " + $p.Version)
+            Evidence = ('Publisher: (empty), version ' + $p.Version)
         }
     }
     return $found

@@ -1,4 +1,4 @@
-﻿# 文件落地：最近往临时目录丢了什么、桌面上摆着什么可执行文件。
+﻿# File surface: what got dropped in Temp recently, what executables are sitting on the desktop.
 
 function Get-RecentTempExe {
     param([int]$Days = 30)
@@ -23,7 +23,8 @@ function Get-DesktopExecutables {
     $desktop = Join-Path $env:USERPROFILE 'Desktop'
     if (-not (Test-Path -LiteralPath $desktop)) { return $rows }
     foreach ($f in (Get-ChildItem -LiteralPath $desktop -File -ErrorAction SilentlyContinue)) {
-        if ($f.Extension -match '(?i)\.(exe|bat|cmd|vbs|ps1|lnk)') {
+        # .lnk left out on purpose: shortcuts are how anyone puts things on a desktop. Reporting them buries the actual exe.
+        if ($f.Extension -match '(?i)\.(exe|bat|cmd|vbs|ps1)$') {
             $rows += [pscustomobject]@{
                 Name = $f.Name
                 Path = $f.FullName
@@ -45,7 +46,7 @@ function Invoke-CheckFiles {
             Domain   = 'files'
             Severity = 3
             Subject  = $f.Name
-            Evidence = ("{0:N0} 字节，写入于 {1:yyyy-MM-dd HH:mm} ⇒ {2}" -f $f.Size, $f.When, $f.Path)
+            Evidence = ("{0:N0} bytes, written {1:yyyy-MM-dd HH:mm} => {2}" -f $f.Size, $f.When, $f.Path)
         }
     }
 
@@ -55,7 +56,7 @@ function Invoke-CheckFiles {
             Domain   = 'files'
             Severity = 2
             Subject  = $f.Name
-            Evidence = ("{0:N0} 字节 ⇒ {1}" -f $f.Size, $f.Path)
+            Evidence = ("{0:N0} bytes => {1}" -f $f.Size, $f.Path)
         }
     }
 

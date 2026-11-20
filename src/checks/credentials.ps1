@@ -1,4 +1,4 @@
-﻿# 凭据：只看文件名和大小，不读内容。读内容就违背隐私前提了。
+﻿# Credential surface: filenames and sizes only. Never opens the file — reading it would break the privacy premise.
 
 function Get-SuspectCredentialFiles {
     $roots = @(
@@ -8,7 +8,7 @@ function Get-SuspectCredentialFiles {
     )
     $namePattern = '(?i)(password|passwd|pwd|cred|token|secret|apikey|api_key|access_key)'
     $extPattern = '(?i)\.(txt|ini|json|csv|xml|yml|yaml|conf|env|log)$'
-    # 只翻一层，不递归——递归会把 node_modules 之类全扫进来，慢且没意义
+    # One level only. Recursing drags node_modules and similar into the scan for no benefit.
     $rows = @()
     foreach ($root in $roots) {
         if (-not (Test-Path -LiteralPath $root)) { continue }
@@ -32,7 +32,7 @@ function Invoke-CheckCredentials {
             Domain   = 'credentials'
             Severity = 4
             Subject  = $f.Name
-            Evidence = ("{0} KB ⇒ {1}（未读取内容，仅按文件名判定）" -f $sizeKb, $f.FullName)
+            Evidence = ("{0} KB => {1} (name match only, file not read)" -f $sizeKb, $f.FullName)
         }
     }
     return $found

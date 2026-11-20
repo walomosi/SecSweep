@@ -1,4 +1,4 @@
-﻿# 进程面：从哪跑的、有没有签名、文件还在不在。
+﻿# Process surface: where it runs from, whether it is signed, whether the file is still there.
 
 function Test-SuspiciousProcessPath {
     param([string]$Path)
@@ -35,7 +35,7 @@ function Invoke-CheckProcesses {
             }
         }
 
-        # 签名校验很慢，只对用户目录下的进程做，系统目录的几百个查不完
+        # Signature checks are slow; system dirs would add hundreds of them and buy nothing.
         if ($path -match '(?i)^[A-Z]:\\Users\\') {
             if (@($wl.process_names) -contains $p.ProcessName) { continue }
             if ($unsignedOk -contains $p.ProcessName) { continue }
@@ -46,7 +46,7 @@ function Invoke-CheckProcesses {
                     Domain   = 'processes'
                     Severity = 3
                     Subject  = [string]$p.ProcessName
-                    Evidence = ($sig.Status.ToString() + ' ⇒ ' + $path)
+                    Evidence = ($sig.Status.ToString() + ' => ' + $path)
                 }
             }
         }

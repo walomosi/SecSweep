@@ -1,4 +1,4 @@
-﻿# 持久化面。这是入侵留存的重灾区，七类位置一起看。
+﻿# Persistence surface. This is where intrusions actually live; seven location families checked together.
 
 function Test-PathUserWritable {
     param([string]$ExePath, $Whitelist)
@@ -52,14 +52,14 @@ function Get-AutorunFindings {
     foreach ($row in (Get-RunValues)) {
         $exe = Get-ExeFromCommandLine $row.Value
         if (-not $exe) {
-            # 裸文件名：没有盘符也没有路径分隔符，只能靠 PATH 解析
+            # Bare filename: no drive, no separator, resolved off PATH at boot. That is how a hijack hides.
             if ($row.Value -notmatch '[:\\/]') {
                 $found += [pscustomobject]@{
                     RuleId   = 'PS-002'
                     Domain   = 'persistence'
                     Severity = 4
                     Subject  = $row.Name
-                    Evidence = ("$($row.Key) ⇒ $($row.Value)")
+                    Evidence = ("$($row.Key) => $($row.Value)")
                 }
             }
             continue
@@ -70,7 +70,7 @@ function Get-AutorunFindings {
                 Domain   = 'persistence'
                 Severity = 3
                 Subject  = $row.Name
-                Evidence = ("目标不存在: $exe")
+                Evidence = $exe
             }
         }
     }
@@ -99,7 +99,7 @@ function Get-ScheduledTaskFindings {
                     Domain   = 'persistence'
                     Severity = 5
                     Subject  = $path
-                    Evidence = ("RunAs=" + $t.Principal.UserId + " ⇒ " + $exe)
+                    Evidence = ('RunAs=' + $t.Principal.UserId + ' => ' + $exe)
                 }
             }
         }

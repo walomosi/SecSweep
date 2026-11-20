@@ -1,4 +1,4 @@
-﻿# 日志面。读安全日志要管理员，读不到就说读不到，不装作没问题。
+﻿# Event log surface. Reading Security needs admin; when it cannot be read, the check stays silent instead of pretending all is well.
 
 function Test-InternalAddress {
     param([string]$Address)
@@ -23,7 +23,7 @@ function Get-RemoteLogonEvents {
         } -MaxEvents $MaxEvents -ErrorAction Stop
     }
     catch {
-        # 权限不足或日志服务没开，返回空，由调用方决定怎么说
+        # No admin or the log service is off. Return nothing and let the caller decide.
         return $rows
     }
 
@@ -42,7 +42,7 @@ function Get-RemoteLogonEvents {
             $rows += [pscustomobject]@{ Address = $ip; When = $e.TimeCreated }
         }
         catch {
-            # 单条 XML 解析失败不影响其它条，跳过即可
+            # One malformed record should not kill the loop.
             continue
         }
     }
@@ -59,7 +59,7 @@ function Invoke-CheckEvents {
         $cleared = @(Get-WinEvent -FilterHashtable @{ LogName = 'Security'; Id = 1102 } -MaxEvents 5 -ErrorAction Stop).Count
     }
     catch {
-        # -1 留给"读不了"，这里不报，避免把权限问题说成入侵
+        # -1 means "could not read". Reporting that as intrusion would be wrong.
         $cleared = -1
     }
     if ($cleared -gt 0) {
@@ -67,8 +67,8 @@ function Invoke-CheckEvents {
             RuleId   = 'EV-001'
             Domain   = 'events'
             Severity = 5
-            Subject  = '安全日志被清空'
-            Evidence = ("1102 事件 $cleared 条")
+            Subject  = 'Security log cleared'
+            Evidence = ("event 1102 x $cleared")
         }
     }
 
@@ -78,7 +78,7 @@ function Invoke-CheckEvents {
             Domain   = 'events'
             Severity = 3
             Subject  = [string]$row.Address
-            Evidence = ("网络登录 4624 Type 3，时间 " + $row.When.ToString('yyyy-MM-dd HH:mm'))
+            Evidence = ("4624 type 3 at " + $row.When.ToString('yyyy-MM-dd HH:mm'))
         }
     }
 

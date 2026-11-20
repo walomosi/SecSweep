@@ -1,6 +1,6 @@
-﻿# 服务面：缺失的、指向可写目录的、挤在 svchost 里的。
+﻿# Service surface: missing binaries, binaries sitting in writable paths, odd svchost groups.
 
-# svchost 组名的权威列表在注册表里，不要手写——微软每个版本都会加新组
+# Group names come from the registry, not a hand-written list — MS adds groups every release and you miss them all.
 function Get-LegitSvchostGroups {
     $groups = @{}
     $keys = @(
@@ -68,7 +68,7 @@ function Invoke-CheckServices {
                 Domain   = 'services'
                 Severity = 2
                 Subject  = [string]$s.Name
-                Evidence = ("$($s.State)/$($s.StartMode) ⇒ " + $exe)
+                Evidence = ("$($s.State)/$($s.StartMode) => " + $exe)
             }
             continue
         }
@@ -79,7 +79,7 @@ function Invoke-CheckServices {
                 Domain   = 'services'
                 Severity = 5
                 Subject  = [string]$s.Name
-                Evidence = ("$($s.State)/$($s.StartMode) ⇒ " + $exe)
+                Evidence = ("$($s.State)/$($s.StartMode) => " + $exe)
             }
         }
     }

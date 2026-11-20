@@ -1,4 +1,4 @@
-﻿# 账户面：陌生账户、Guest、管理员组、UAC。都是读而不改。
+﻿# Account surface: unknown local accounts, Guest, Administrators membership, UAC. Read-only.
 
 function Invoke-CheckAccounts {
     param($Ctx)
@@ -22,11 +22,11 @@ function Invoke-CheckAccounts {
     $guest = $locals | Where-Object { $_.Name -eq 'Guest' } | Select-Object -First 1
     if ($guest -and -not $guest.Disabled) {
         $found += [pscustomobject]@{
-            RuleId   = 'AC-002'
-            Domain   = 'accounts'
-            Severity = 3
-            Subject  = 'Guest'
-            Evidence = 'enabled=True'
+            RuleId    = 'AC-002'
+            Domain    = 'accounts'
+            Severity  = 3
+            Subject   = 'Guest'
+            Evidence  = 'enabled=True'
             FixAction = 'net user Guest /active:no'
         }
     }
@@ -44,13 +44,13 @@ function Invoke-CheckAccounts {
         if (@($wl.accounts) -notcontains $name) { $strangers += $name }
     }
     if ($strangers.Count -gt 0) {
-        # 只有一个管理员是常态，多出来的每一个都要能说出是谁加的
+        # One admin is normal. Every extra member needs a name attached to it.
         $found += [pscustomobject]@{
             RuleId   = 'AC-003'
             Domain   = 'accounts'
             Severity = 4
             Subject  = ($strangers -join ', ')
-            Evidence = ('Administrators 组里不在白名单的成员: ' + ($strangers -join ', '))
+            Evidence = ('Administrators: ' + ($strangers -join ', '))
         }
     }
 
@@ -59,12 +59,12 @@ function Invoke-CheckAccounts {
     if ($uac -and $uac.PSObject.Properties['EnableLUA']) {
         if ([int]$uac.EnableLUA -eq 0) {
             $found += [pscustomobject]@{
-                RuleId   = 'AC-004'
-                Domain   = 'accounts'
-                Severity = 2
-                Subject  = 'UAC'
-                Evidence = 'EnableLUA=0'
-                FixAction = 'Set-ItemProperty EnableLUA=1（需重启）'
+                RuleId    = 'AC-004'
+                Domain    = 'accounts'
+                Severity  = 2
+                Subject   = 'UAC'
+                Evidence  = 'EnableLUA=0'
+                FixAction = 'Set-ItemProperty EnableLUA=1 (needs a reboot)'
             }
         }
     }

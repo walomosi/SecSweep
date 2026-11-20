@@ -1,4 +1,4 @@
-﻿# 加固面：该开的审计、该关的广播。这三项都是默认没配好的。
+﻿# Hardening surface: audits that should be on, broadcasts that should be off. All three are off by default on a fresh box.
 
 function Get-ScriptBlockLogState {
     $key = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging'
@@ -8,7 +8,7 @@ function Get-ScriptBlockLogState {
 }
 
 function Test-LogonAuditFailure {
-    # auditpol 不在 PATH，只能拼全路径；读不出来时不报，避免把权限问题说成配置问题
+    # auditpol is not on PATH. And if it cannot be read, say nothing rather than guess.
     $exe = Join-Path $env:SystemRoot 'System32\auditpol.exe'
     if (-not (Test-Path -LiteralPath $exe)) { return $false }
     $raw = & $exe /get /subcategory:"{0CCE9215-69AE-11D9-BED3-505054503030}" 2>$null
@@ -35,7 +35,7 @@ function Invoke-CheckHardening {
             Domain   = 'hardening'
             Severity = 2
             Subject  = 'ScriptBlockLogging'
-            Evidence = 'EnableScriptBlockLogging 未开启'
+            Evidence = 'EnableScriptBlockLogging not set'
         }
     }
 
@@ -44,8 +44,8 @@ function Invoke-CheckHardening {
             RuleId   = 'HD-002'
             Domain   = 'hardening'
             Severity = 2
-            Subject  = '登录失败审计'
-            Evidence = '4625 不会记录（审计策略没开失败项）'
+            Subject  = 'Logon failure audit'
+            Evidence = '4625 will not be recorded (failure auditing is off)'
         }
     }
 
@@ -55,7 +55,7 @@ function Invoke-CheckHardening {
             Domain   = 'hardening'
             Severity = 2
             Subject  = 'LLMNR'
-            Evidence = 'EnableMulticast 未设为 0'
+            Evidence = 'EnableMulticast not set to 0'
         }
     }
 

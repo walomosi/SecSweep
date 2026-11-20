@@ -1,10 +1,10 @@
-﻿# 基线比对。只记"关键位置的键和值"，不比内容，避免基线文件本身变成隐私泄露源。
+﻿# Baseline diff. Stores key/value pairs for a handful of locations, never file contents — the baseline should not become a privacy leak of its own.
 
 function Get-SweepSnapshot {
     $snap = [ordered]@{}
 
     foreach ($u in (Get-CimInstance Win32_UserAccount -Filter "LocalAccount=True" -ErrorAction SilentlyContinue)) {
-        # Enabled 在某些内置账户上是空值，直接 ToString() 会炸
+        # Enabled is $null on some built-in accounts; .ToString() throws on that.
         $snap['account:' + $u.Name] = [string]$u.Enabled
     }
 
@@ -52,7 +52,7 @@ function Invoke-CheckBaseline {
     $found = @()
     $path = Join-Path (Join-Path $Ctx.RootDir 'rules') 'baseline.json'
     if (-not (Test-Path -LiteralPath $path)) {
-        # 没有基线就没什么可比的，不猜
+        # No baseline, nothing to compare against. Guessing here would be worse than silence.
         return $found
     }
 
@@ -61,6 +61,7 @@ function Invoke-CheckBaseline {
     $old = @{}
     foreach ($p in $doc.items.PSObject.Properties) { $old[$p.Name] = [string]$p.Value }
 
+    # The +/-/~ prefixes keep Subject language-neutral on both report languages.
     $new = Get-SweepSnapshot
     foreach ($key in $new.Keys) {
         if (-not $old.ContainsKey($key)) {
@@ -68,7 +69,7 @@ function Invoke-CheckBaseline {
                 RuleId   = 'BL-001'
                 Domain   = 'baseline'
                 Severity = 3
-                Subject  = ('新增 ' + $key)
+                Subject  = ('+ ' + $key)
                 Evidence = [string]$new[$key]
             }
             continue
@@ -78,8 +79,8 @@ function Invoke-CheckBaseline {
                 RuleId   = 'BL-001'
                 Domain   = 'baseline'
                 Severity = 3
-                Subject  = ('变化 ' + $key)
-                Evidence = ('旧: ' + $old[$key] + ' → 新: ' + $new[$key])
+                Subject  = ('~ ' + $key)
+                Evidence = ('old: ' + $old[$key] + ' -> new: ' + $new[$key])
             }
         }
     }
@@ -89,8 +90,8 @@ function Invoke-CheckBaseline {
                 RuleId   = 'BL-001'
                 Domain   = 'baseline'
                 Severity = 3
-                Subject  = ('消失 ' + $key)
-                Evidence = ('基线值: ' + $old[$key])
+                Subject  = ('- ' + $key)
+                Evidence = ('baseline: ' + $old[$key])
             }
         }
     }
