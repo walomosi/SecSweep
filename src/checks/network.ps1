@@ -107,5 +107,54 @@ function Invoke-CheckNetwork {
         }
     }
 
+    $found += @(Get-ExposedPortFindings)
+
     return $found
+}
+
+function Get-ExposedPortFindings {
+    $f = @()
+    $ports = @{}
+    foreach ($l in @(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue)) {
+        $ports[[int]$l.LocalPort] = $true
+    }
+
+    # None of these should be listening on a general-purpose Windows host.
+    $watch = @(
+        @('NW-006', 22, 4, 'SSH'),
+        @('NW-007', 23, 4, 'Telnet'),
+        @('NW-008', 21, 3, 'FTP')
+    )
+    foreach ($w in $watch) {
+        if (-not $ports.ContainsKey($w[1])) { continue }
+        $f += [pscustomobject]@{
+            RuleId   = $w[0]
+            Domain   = 'network'
+            Severity = $w[2]
+            Subject  = ($w[3] + ' on port ' + $w[1])
+            Evidence = 'listening'
+        }
+    }
+
+    if ($ports.ContainsKey(5985) -or $ports.ContainsKey(5986)) {
+        $f += [pscustomobject]@{
+            RuleId   = 'NW-009'
+            Domain   = 'network'
+            Severity = 3
+            Subject  = 'WinRM'
+            Evidence = $(if ($ports.ContainsKey(5986)) { 'HTTPS 5986 listening' } else { 'HTTP 5985 listening' })
+        }
+    }
+
+    foreach ($port in @(1433, 3306, 5432, 6379, 27017)) {
+        if (-not $ports.ContainsKey($port)) { continue }
+        $f += [pscustomobject]@{
+            RuleId   = 'NW-010'
+            Domain   = 'network'
+            Severity = 3
+            Subject  = ('database port ' + $port)
+            Evidence = 'listening'
+        }
+    }
+    return $f
 }

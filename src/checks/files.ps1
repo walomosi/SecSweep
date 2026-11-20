@@ -60,5 +60,39 @@ function Invoke-CheckFiles {
         }
     }
 
+    $found += @(Get-UserDropFindings)
+
     return $found
+}
+
+function Get-UserDropFindings {
+    $f = @()
+
+    # ProgramData is world-writable on many builds, so an exe sitting at its root is
+    # either an installer leftover or a staged payload.
+    if ($env:ProgramData -and (Test-Path -LiteralPath $env:ProgramData)) {
+        foreach ($exe in @(Get-ChildItem -LiteralPath $env:ProgramData -Filter '*.exe' -File -ErrorAction SilentlyContinue | Select-Object -First 10)) {
+            $f += [pscustomobject]@{
+                RuleId   = 'FS-003'
+                Domain   = 'files'
+                Severity = 3
+                Subject  = $exe.Name
+                Evidence = $exe.FullName
+            }
+        }
+    }
+
+    # A dll at the top of a profile is unusual; anything loading it resolves by relative path.
+    if ($env:USERPROFILE -and (Test-Path -LiteralPath $env:USERPROFILE)) {
+        foreach ($dll in @(Get-ChildItem -LiteralPath $env:USERPROFILE -Filter '*.dll' -File -ErrorAction SilentlyContinue | Select-Object -First 10)) {
+            $f += [pscustomobject]@{
+                RuleId   = 'FS-004'
+                Domain   = 'files'
+                Severity = 3
+                Subject  = $dll.Name
+                Evidence = $dll.FullName
+            }
+        }
+    }
+    return $f
 }

@@ -35,5 +35,32 @@ function Invoke-CheckCredentials {
             Evidence = ("{0} KB => {1} (name match only, file not read)" -f $sizeKb, $f.FullName)
         }
     }
+
+    $found += @(Get-AutoLogonFindings)
+
     return $found
+}
+
+function Get-AutoLogonFindings {
+    $f = @()
+    $key = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+    $props = Get-ItemProperty -LiteralPath $key -ErrorAction SilentlyContinue
+    if (-not $props) { return $f }
+
+    $pw = ''
+    if ($props.PSObject.Properties['DefaultPassword']) { $pw = [string]$props.DefaultPassword }
+    # The value only exists when someone set autologon with a stored password; it is
+    # plaintext by design.
+    if (-not $pw) { return $f }
+
+    $user = ''
+    if ($props.PSObject.Properties['DefaultUserName']) { $user = [string]$props.DefaultUserName }
+    $f += [pscustomobject]@{
+        RuleId   = 'CR-002'
+        Domain   = 'credentials'
+        Severity = 5
+        Subject  = ('AutoLogon ' + $user)
+        Evidence = 'DefaultPassword stored in plaintext under Winlogon'
+    }
+    return $f
 }

@@ -82,5 +82,75 @@ function Invoke-CheckEvents {
         }
     }
 
+    $found += @(Get-EventTraceFindings)
+
     return $found
+}
+
+function Get-EventTraceFindings {
+    $f = @()
+
+    # A single 4625 is a typo. Twenty in a day is someone working through a list.
+    try {
+        $failed = @(Get-WinEvent -FilterHashtable @{
+            LogName = 'Security'; Id = 4625; StartTime = (Get-Date).AddDays(-1)
+        } -ErrorAction Stop).Count
+        if ($failed -gt 20) {
+            $f += [pscustomobject]@{
+                RuleId   = 'EV-003'
+                Domain   = 'events'
+                Severity = 3
+                Subject  = 'Failed logons'
+                Evidence = ($failed.ToString() + ' x 4625 in the last 24h')
+            }
+        }
+    }
+    catch {
+        # No read access to Security means no numbers, not zero failures.
+    }
+
+    # Task and account creation in the recent past are worth naming even without context.
+    try {
+        foreach ($e in @(Get-WinEvent -FilterHashtable @{
+            LogName = 'Security'; Id = 4698; StartTime = (Get-Date).AddDays(-7)
+        } -MaxEvents 5 -ErrorAction Stop)) {
+            $f += [pscustomobject]@{
+                RuleId   = 'EV-004'
+                Domain   = 'events'
+                Severity = 3
+                Subject  = 'Scheduled task created'
+                Evidence = $e.TimeCreated.ToString('yyyy-MM-dd HH:mm')
+            }
+        }
+    }
+    catch { }
+
+    try {
+        foreach ($e in @(Get-WinEvent -FilterHashtable @{
+            LogName = 'Security'; Id = 4720; StartTime = (Get-Date).AddDays(-30)
+        } -MaxEvents 5 -ErrorAction Stop)) {
+            $f += [pscustomobject]@{
+                RuleId   = 'EV-005'
+                Domain   = 'events'
+                Severity = 4
+                Subject  = 'Local account created'
+                Evidence = $e.TimeCreated.ToString('yyyy-MM-dd HH:mm')
+            }
+        }
+    }
+    catch { }
+
+    $props = Get-ItemProperty -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Services\EventLog' -ErrorAction SilentlyContinue
+    $start = $null
+    if ($props -and $props.PSObject.Properties['Start']) { $start = [int]$props.Start }
+    if ($null -ne $start -and $start -ne 2) {
+        $f += [pscustomobject]@{
+            RuleId   = 'EV-006'
+            Domain   = 'events'
+            Severity = 4
+            Subject  = 'EventLog service'
+            Evidence = ('Start=' + $start + ' (not automatic)')
+        }
+    }
+    return $f
 }

@@ -263,6 +263,222 @@
       "fix": { "zh": "组策略关闭 EnableMulticast。", "en": "Disable EnableMulticast via policy." }
     },
     {
+      "id": "HD-004",
+      "domain": "hardening",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "SMB 服务端签名未强制", "en": "SMB server signing not required" },
+      "why": { "zh": "同网段可以不碰密码直接中继认证，内网最常见的一条。", "en": "Relay credentials on the same segment without touching a password; the most common LAN finding." },
+      "fix": { "zh": "RequireSecuritySignature 设为 1。", "en": "Set RequireSecuritySignature to 1." }
+    },
+    {
+      "id": "HD-005",
+      "domain": "hardening",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "SMB 客户端签名未强制", "en": "SMB client signing not required" },
+      "why": { "zh": "不强制签名，等于接受对方降级到无签名会话。", "en": "Without it the client accepts a peer that downgrades the session." },
+      "fix": { "zh": "LanmanWorkstation 下 RequireSecuritySignature 设为 1。", "en": "Set RequireSecuritySignature under LanmanWorkstation to 1." }
+    },
+    {
+      "id": "HD-006",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "SMB 传输未加密", "en": "SMB traffic is not encrypted" },
+      "why": { "zh": "共享内容在网络上是明文，抓包就能读到。", "en": "Share contents travel in clear text and are readable from a capture." },
+      "fix": { "zh": "EncryptData 设为 1，仅 SMB3 客户端可连。", "en": "Set EncryptData to 1; only SMB3 clients can connect afterwards." }
+    },
+    {
+      "id": "HD-007",
+      "domain": "hardening",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "LM 兼容级别低于 3", "en": "LM compatibility below level 3" },
+      "why": { "zh": "允许 NTLMv1 或更早的认证，哈希可被直接爆破。", "en": "Permits NTLMv1 or older, whose hashes fall to offline cracking." },
+      "fix": { "zh": "LmCompatibilityLevel 设为 5。", "en": "Set LmCompatibilityLevel to 5." }
+    },
+    {
+      "id": "HD-008",
+      "domain": "hardening",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "允许匿名枚举", "en": "Anonymous enumeration allowed" },
+      "why": { "zh": "无需凭据就能列出账户、共享和策略，侦察的起点。", "en": "Accounts, shares and policy listable without credentials; the start of recon." },
+      "fix": { "zh": "RestrictAnonymous 设为 1。", "en": "Set RestrictAnonymous to 1." }
+    },
+    {
+      "id": "HD-009",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "NTLM 会话安全低于完整性加加密", "en": "NTLM session security below integrity and encryption" },
+      "why": { "zh": "缺少完整性或加密位，中间人可以改包或用降级攻击。", "en": "Missing the integrity or encryption bit lets a relay alter or downgrade traffic." },
+      "fix": { "zh": "NTLMMinClientSec 与 NTLMMinServerSec 均设为 537395200。", "en": "Set both NTLMMinClientSec and NTLMMinServerSec to 537395200." }
+    },
+    {
+      "id": "HD-010",
+      "domain": "hardening",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "LSASS 未受保护", "en": "LSASS is not protected" },
+      "why": { "zh": "没有 PPL，任何管理员权限的进程都能打开 lsass 读凭据。", "en": "Without PPL any admin-level process can open lsass and read credentials." },
+      "fix": { "zh": "RunAsPPL 设为 2 后重启。", "en": "Set RunAsPPL to 2 and reboot." }
+    },
+    {
+      "id": "HD-011",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "RDP 加密级别低于 High", "en": "RDP encryption below High" },
+      "why": { "zh": "低级别允许协商到弱加密，远程会话可被解开。", "en": "Lower levels negotiate weak ciphers that can be unwrapped." },
+      "fix": { "zh": "MinEncryptionLevel 设为 3。", "en": "Set MinEncryptionLevel to 3." }
+    },
+    {
+      "id": "HD-012",
+      "domain": "hardening",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "RDP 剪贴板与磁盘重定向开放", "en": "RDP clipboard and drive redirection open" },
+      "why": { "zh": "远程会话能直接读本地磁盘，数据外带不需要别的通道。", "en": "A remote session reads the local disk directly, so exfiltration needs no other channel." },
+      "fix": { "zh": "fDisableClip 与 fDisableCdm 均设为 1。", "en": "Set both fDisableClip and fDisableCdm to 1." }
+    },
+    {
+      "id": "HD-013",
+      "domain": "hardening",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "AutoRun 未禁用", "en": "AutoRun is not disabled" },
+      "why": { "zh": "插入介质自动执行，U 盘是最省事的入口。", "en": "Inserting media runs code; a USB stick is the cheapest way in." },
+      "fix": { "zh": "NoDriveTypeAutoRun 设为 255。", "en": "Set NoDriveTypeAutoRun to 255." }
+    },
+    {
+      "id": "HD-014",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "UAC 未使用安全桌面", "en": "UAC does not use the secure desktop" },
+      "why": { "zh": "同意框画在普通桌面上，可被其他窗口遮挡或模拟点击。", "en": "The consent prompt draws on the normal desktop, where it can be covered or clicked through." },
+      "fix": { "zh": "PromptOnSecureDesktop 设为 1。", "en": "Set PromptOnSecureDesktop to 1." }
+    },
+    {
+      "id": "HD-015",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "PowerShell 转录未开启", "en": "PowerShell transcription is off" },
+      "why": { "zh": "脚本会话不留文本记录，事后只能靠命令历史猜。", "en": "Script sessions leave no text record, so post-hoc review relies on guessing." },
+      "fix": { "zh": "EnableTranscripting 设为 1 并指定输出目录。", "en": "Set EnableTranscripting to 1 and name an output directory." }
+    },
+    {
+      "id": "HD-016",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "Windows Script Host 可用", "en": "Windows Script Host is available" },
+      "why": { "zh": "vbs 与 js 双扩展名文件直接执行，是钓鱼附件的常见载荷。", "en": "vbs and js run straight from a double-click; a staple phishing payload." },
+      "fix": { "zh": "HKLM 下 Script Host Settings\\Enabled 设为 0。", "en": "Set Script Host Settings\\Enabled to 0 under HKLM." }
+    },
+    {
+      "id": "HD-017",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "安全日志到顶即覆盖", "en": "Security log overwrites when full" },
+      "why": { "zh": "塞满日志就能挤掉入侵痕迹，攻击者常用的一招。", "en": "Flooding the log pushes evidence out; a standard cleanup trick." },
+      "fix": { "zh": "Retention 设为 1，写满后保留不覆盖。", "en": "Set Retention to 1 so a full log stops rather than overwrites." }
+    },
+    {
+      "id": "HD-018",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "安全日志容量过小", "en": "Security log is too small" },
+      "why": { "zh": "容量小则保留窗口短，翻旧账时已经没了。", "en": "A small cap means a short window; by the time you look, it is gone." },
+      "fix": { "zh": "MaxSize 至少 20 MB，建议 100 MB。", "en": "Raise MaxSize to at least 20 MB, 100 MB preferred." }
+    },
+    {
+      "id": "HD-019",
+      "domain": "hardening",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "允许匿名枚举 SAM", "en": "Anonymous SAM enumeration allowed" },
+      "why": { "zh": "无需认证即可列出本地账户名，为爆破做准备。", "en": "Local account names listable without authentication, which feeds a brute force." },
+      "fix": { "zh": "RestrictAnonymousSAM 设为 1。", "en": "Set RestrictAnonymousSAM to 1." }
+    },
+    {
+      "id": "HD-020",
+      "domain": "hardening",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "Everyone 包含匿名登录", "en": "Everyone includes anonymous logons" },
+      "why": { "zh": "匿名身份被并入 Everyone，共享和注册表权限会连带开放。", "en": "Anonymous identities join Everyone, which opens shares and registry rights with it." },
+      "fix": { "zh": "EveryoneIncludesAnonymous 设为 0。", "en": "Set EveryoneIncludesAnonymous to 0." }
+    },
+    {
+      "id": "HD-021",
+      "domain": "hardening",
+      "severity": 5,
+      "reversible": true,
+      "title": { "zh": "WDigest 缓存明文凭据", "en": "WDigest caches plaintext credentials" },
+      "why": { "zh": "开启后 lsass 内存里留着明文密码，被 dump 就等于交账号。", "en": "On, plaintext passwords sit in lsass memory; one dump and the accounts are gone." },
+      "fix": { "zh": "UseLogonCredential 设为 0 或删除该值后重启。", "en": "Set UseLogonCredential to 0 or delete the value, then reboot." }
+    },
+    {
+      "id": "HD-022",
+      "domain": "hardening",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "AlwaysInstallElevated 被打开", "en": "AlwaysInstallElevated is on" },
+      "why": { "zh": "任何用户装 MSI 都以 SYSTEM 运行，等于本地提权后门。", "en": "Any user's MSI runs as SYSTEM, which is a local privilege escalation backdoor." },
+      "fix": { "zh": "机器与用户两个位置的该值都删除。", "en": "Delete the value in both the machine and user hives." }
+    },
+    {
+      "id": "HD-023",
+      "domain": "hardening",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "SEHOP 被关闭", "en": "SEHOP is disabled" },
+      "why": { "zh": "异常链缺少校验，利用栈溢出时少一道阻碍。", "en": "Without chain validation a stack overflow exploit has one less hurdle." },
+      "fix": { "zh": "删除 DisableExceptionChainValidation 或设为 0。", "en": "Delete DisableExceptionChainValidation or set it to 0." }
+    },
+    {
+      "id": "HD-024",
+      "domain": "hardening",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "DLL 搜索顺序不安全", "en": "Unsafe DLL search order" },
+      "why": { "zh": "先搜当前目录，把恶意 DLL 放旁边就能被加载。", "en": "Searching the working directory first lets a DLL dropped next to an exe load." },
+      "fix": { "zh": "SafeDllSearchMode 设为 1 或删除该值。", "en": "Set SafeDllSearchMode to 1 or delete the value." }
+    },
+    {
+      "id": "HD-025",
+      "domain": "hardening",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "账户登录审计未开成功", "en": "Account logon success auditing is off" },
+      "why": { "zh": "跨机认证不留记录，横向移动的痕迹全在别处。", "en": "Cross-host authentication leaves nothing here, so lateral movement hides elsewhere." },
+      "fix": { "zh": "auditpol 开启 Account Logon 的成功审计。", "en": "Enable success auditing for Account Logon with auditpol." }
+    },
+    {
+      "id": "HD-026",
+      "domain": "hardening",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "进程创建审计未开", "en": "Process creation auditing is off" },
+      "why": { "zh": "没有 4688，就无法还原攻击者执行过什么命令。", "en": "Without 4688 there is no record of what the attacker actually ran." },
+      "fix": { "zh": "开启 Detailed Tracking 下的进程创建成功审计。", "en": "Enable process creation success auditing under Detailed Tracking." }
+    },
+    {
+      "id": "HD-027",
+      "domain": "hardening",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "审计策略更改未记录", "en": "Audit policy changes are not recorded" },
+      "why": { "zh": "有人改审计规则本身也该留痕，否则等于可以关灯。", "en": "Editing the audit rules should itself leave a mark, or the lights can simply be switched off." },
+      "fix": { "zh": "开启 Policy Change 的成功审计。", "en": "Enable success auditing under Policy Change." }
+    },
+    {
       "id": "FS-001",
       "domain": "files",
       "severity": 3,
@@ -477,6 +693,285 @@
       "title": { "zh": "LSA 通知包包含未知模块", "en": "LSA notification packages include an unknown module" },
       "why": { "zh": "lsass 加载这些 DLL，权限最高，一旦被劫持等于交出了凭据。", "en": "lsass loads these at the highest privilege; hijacking one hands over credentials." },
       "fix": { "zh": "只保留 scecli、rassfm、kdcsvc，其余移除后重启。", "en": "Keep only scecli, rassfm, kdcsvc; remove the rest and reboot." }
+    },
+    {
+      "id": "AC-006",
+      "domain": "accounts",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "最短密码长度不足 8 位", "en": "Minimum password length under 8" },
+      "why": { "zh": "短密码让在线爆破的尝试次数降到可接受范围。", "en": "Short passwords pull online brute force back into a feasible number of tries." },
+      "fix": { "zh": "MinimumPasswordLength 设为 8 或更高。", "en": "Set MinimumPasswordLength to 8 or higher." }
+    },
+    {
+      "id": "AC-007",
+      "domain": "accounts",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "账户锁定阈值为 0", "en": "Account lockout threshold is 0" },
+      "why": { "zh": "不锁定等于不限次数，爆破只看时间够不够。", "en": "No lockout means unlimited attempts; brute force is only a question of time." },
+      "fix": { "zh": "LockoutBadCount 设为 5。", "en": "Set LockoutBadCount to 5." }
+    },
+    {
+      "id": "AC-008",
+      "domain": "accounts",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "锁定时长过短", "en": "Lockout duration too short" },
+      "why": { "zh": "锁定几分钟就自动解开，等于给对手一个免费节流阀。", "en": "A few minutes of lockout hands the attacker a free rate limiter." },
+      "fix": { "zh": "LockoutDuration 设为 15 分钟以上。", "en": "Set LockoutDuration to 15 minutes or more." }
+    },
+    {
+      "id": "AC-009",
+      "domain": "accounts",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "密码历史记录过少", "en": "Password history too short" },
+      "why": { "zh": "历史为 0 时改密码可以原地绕回，改密形同虚设。", "en": "With no history a reset goes straight back to the old value, so a reset does nothing." },
+      "fix": { "zh": "PasswordHistorySize 设为 5 以上。", "en": "Set PasswordHistorySize to 5 or more." }
+    },
+    {
+      "id": "AC-010",
+      "domain": "accounts",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "密码永不过期", "en": "Passwords never expire" },
+      "why": { "zh": "长期不换的凭据一旦泄露，有效期就是无限。", "en": "A credential that never rotates stays valid forever once it leaks." },
+      "fix": { "zh": "MaxPasswordAge 设为 90 天以内。", "en": "Set MaxPasswordAge to 90 days or less." }
+    },
+    {
+      "id": "AC-011",
+      "domain": "accounts",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "密码复杂度未开启", "en": "Password complexity is off" },
+      "why": { "zh": "没有字符类别要求，弱密码比例的下降全靠运气。", "en": "Without a category requirement, weak passwords drop only by luck." },
+      "fix": { "zh": "PasswordComplexity 设为 1。", "en": "Set PasswordComplexity to 1." }
+    },
+    {
+      "id": "AC-012",
+      "domain": "accounts",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "锁定计数重置窗口过短", "en": "Lockout counter resets too soon" },
+      "why": { "zh": "窗口短于锁定时长时，锁定期满后计数已清零，可以立刻再来一轮。", "en": "When the window is shorter than the lockout, the counter clears before release and the next round starts clean." },
+      "fix": { "zh": "ResetLockoutCount 设为 15 分钟以上。", "en": "Set ResetLockoutCount to 15 minutes or more." }
+    },
+    {
+      "id": "AC-013",
+      "domain": "accounts",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "允许空密码账户使用", "en": "Blank passwords are accepted" },
+      "why": { "zh": "空密码账户可以直接登录，无需任何凭据。", "en": "A blank password account logs in with no credential at all." },
+      "fix": { "zh": "LimitBlankPasswordUse 设为 1。", "en": "Set LimitBlankPasswordUse to 1." }
+    },
+    {
+      "id": "SV-006",
+      "domain": "services",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "远程注册表服务在运行", "en": "Remote registry service is running" },
+      "why": { "zh": "远程改注册表等于远程改系统行为，默认应禁用。", "en": "Remote registry edits change system behaviour from a distance; off by default for a reason." },
+      "fix": { "zh": "停止并禁用 RemoteRegistry。", "en": "Stop and disable RemoteRegistry." }
+    },
+    {
+      "id": "SV-007",
+      "domain": "services",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "Telnet 服务在运行", "en": "Telnet server is running" },
+      "why": { "zh": "明文协议，凭据在网络上直接可见。", "en": "A cleartext protocol; credentials are readable off the wire." },
+      "fix": { "zh": "停止并禁用 TlntSvr。", "en": "Stop and disable TlntSvr." }
+    },
+    {
+      "id": "SV-008",
+      "domain": "services",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "路由与远程访问服务在运行", "en": "Routing and remote access is running" },
+      "why": { "zh": "这台机器成了网络入口，攻击面从本机扩展到整条路径。", "en": "The host becomes a network entry point, widening the surface beyond itself." },
+      "fix": { "zh": "停止并禁用 RemoteAccess。", "en": "Stop and disable RemoteAccess." }
+    },
+    {
+      "id": "SV-009",
+      "domain": "services",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "WinRM 在运行", "en": "WinRM is running" },
+      "why": { "zh": "远程管理通道，凭据和命令都走 5985/5986。", "en": "A remote management channel; credentials and commands ride 5985/5986." },
+      "fix": { "zh": "确认确有需要，否则停止并禁用 WinRM。", "en": "Keep it only if something needs it; otherwise stop and disable WinRM." }
+    },
+    {
+      "id": "SV-010",
+      "domain": "services",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "SSDP 发现服务在运行", "en": "SSDP discovery is running" },
+      "why": { "zh": "对外广播设备存在，是 UPnP 攻击的常见入口。", "en": "Advertises the device on the network; a common UPnP entry point." },
+      "fix": { "zh": "停止并禁用 SSDPSRV。", "en": "Stop and disable SSDPSRV." }
+    },
+    {
+      "id": "SV-011",
+      "domain": "services",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "打印后台服务在运行", "en": "Print spooler is running" },
+      "why": { "zh": "打印相关漏洞多年反复，服务器上通常不需要打印。", "en": "Print-related flaws keep returning; a server rarely needs to print." },
+      "fix": { "zh": "停止并禁用 Spooler。", "en": "Stop and disable Spooler." }
+    },
+    {
+      "id": "SV-012",
+      "domain": "services",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "SNMP 服务在运行", "en": "SNMP is running" },
+      "why": { "zh": "SNMPv1/v2 的社区字符串多半是 public，等于公开读取设备信息。", "en": "SNMPv1/v2 community strings are usually public, which exposes device data." },
+      "fix": { "zh": "停止并禁用 SNMP。", "en": "Stop and disable SNMP." }
+    },
+    {
+      "id": "NW-006",
+      "domain": "network",
+      "severity": 4,
+      "reversible": false,
+      "title": { "zh": "SSH 端口在监听", "en": "SSH is listening" },
+      "why": { "zh": "Windows 上跑 SSH 属于额外加的入口，需要明确授权。", "en": "SSH on Windows is an added entry point and needs to be deliberate." },
+      "fix": { "zh": "确认是谁开的，不需要则停服务。", "en": "Find out who opened it; stop the service if unneeded." }
+    },
+    {
+      "id": "NW-007",
+      "domain": "network",
+      "severity": 4,
+      "reversible": false,
+      "title": { "zh": "Telnet 端口在监听", "en": "Telnet is listening" },
+      "why": { "zh": "23 端口开放意味着有人用明文协议对外服务。", "en": "Port 23 open means a cleartext protocol is being served." },
+      "fix": { "zh": "停掉对应服务。", "en": "Stop the service behind it." }
+    },
+    {
+      "id": "NW-008",
+      "domain": "network",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "FTP 端口在监听", "en": "FTP is listening" },
+      "why": { "zh": "明文文件传输，账号密码和内容都不加密。", "en": "Cleartext file transfer; both credentials and content travel unencrypted." },
+      "fix": { "zh": "改用 SFTP 或 SMB3 加密，停掉 FTP。", "en": "Move to SFTP or encrypted SMB3 and stop FTP." }
+    },
+    {
+      "id": "NW-009",
+      "domain": "network",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "WinRM 端口在监听", "en": "WinRM port is listening" },
+      "why": { "zh": "5985 走明文 HTTP，凭据只在传输层之外靠协商保护。", "en": "5985 speaks plain HTTP; credentials are protected only by whatever was negotiated above it." },
+      "fix": { "zh": "只保留 5986，或关闭 WinRM。", "en": "Keep only 5986, or turn WinRM off." }
+    },
+    {
+      "id": "NW-010",
+      "domain": "network",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "数据库端口在监听", "en": "Database port is listening" },
+      "why": { "zh": "通用 Windows 主机上出现数据库端口，通常是被装上去的额外服务。", "en": "A database port on a general-purpose Windows host usually means something got installed on the side." },
+      "fix": { "zh": "确认用途，只绑内网或关闭。", "en": "Confirm the purpose; bind to the LAN only or close it." }
+    },
+    {
+      "id": "EV-003",
+      "domain": "events",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "一天内登录失败次数异常", "en": "Failed logons spike within a day" },
+      "why": { "zh": "4625 在 24 小时内超过 20 次，多半是有人在试密码。", "en": "Over 20 4625 events in 24 hours usually means someone is guessing passwords." },
+      "fix": { "zh": "看来源账户与 IP，必要时封禁并改密。", "en": "Check the account and source, block it and rotate the password." }
+    },
+    {
+      "id": "EV-004",
+      "domain": "events",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "近七天有计划任务被创建", "en": "Scheduled task created in the last week" },
+      "why": { "zh": "4698 是持久化最直接的证据，需要知道是谁建的。", "en": "4698 is the most direct persistence evidence; you need to know who created it." },
+      "fix": { "zh": "核对任务内容与创建者。", "en": "Review the task body and its creator." }
+    },
+    {
+      "id": "EV-005",
+      "domain": "events",
+      "severity": 4,
+      "reversible": false,
+      "title": { "zh": "近三十天有本地账户被创建", "en": "Local account created in the last month" },
+      "why": { "zh": "4720 出现即说明有人在这台机器上加过身份。", "en": "A 4720 means an identity was added to this machine." },
+      "fix": { "zh": "确认创建者与用途，无主则删除。", "en": "Confirm creator and purpose; delete if unowned." }
+    },
+    {
+      "id": "EV-006",
+      "domain": "events",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "事件日志服务未设为自动", "en": "EventLog service is not automatic" },
+      "why": { "zh": "日志服务被停或改手动，等于关掉了全部留痕。", "en": "Stopping it or switching it to manual switches off every record the box keeps." },
+      "fix": { "zh": "Set-Service EventLog -StartupType Automatic 并启动。", "en": "Set-Service EventLog -StartupType Automatic and start it." }
+    },
+    {
+      "id": "FS-003",
+      "domain": "files",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "ProgramData 根目录有可执行文件", "en": "Executable at the root of ProgramData" },
+      "why": { "zh": "很多系统上 ProgramData 可被普通用户写入，放 exe 是投递的常见落点。", "en": "ProgramData is writable by normal users on many builds, which makes it a common drop point." },
+      "fix": { "zh": "取哈希核实来源，确认后再处理。", "en": "Hash it, verify origin, then decide." }
+    },
+    {
+      "id": "FS-004",
+      "domain": "files",
+      "severity": 3,
+      "reversible": false,
+      "title": { "zh": "用户目录根层有 DLL", "en": "DLL at the top of a user profile" },
+      "why": { "zh": "放在这里的 DLL 会被相对路径解析加载，是劫持的现成目标。", "en": "A DLL here gets picked up by relative path resolution, which is a ready-made hijack target." },
+      "fix": { "zh": "核对来源，非必要则移走。", "en": "Check where it came from; move it out if unneeded." }
+    },
+    {
+      "id": "CR-002",
+      "domain": "credentials",
+      "severity": 5,
+      "reversible": true,
+      "title": { "zh": "自动登录保存了明文密码", "en": "AutoLogon stores a plaintext password" },
+      "why": { "zh": "DefaultPassword 是明文写进注册表的，读一次就拿到账号。", "en": "DefaultPassword sits in the registry in plaintext; one read hands over the account." },
+      "fix": { "zh": "删除 DefaultPassword 与 AutoAdminLogon，改用凭据管理器。", "en": "Remove DefaultPassword and AutoAdminLogon; use Credential Manager instead." }
+    },
+    {
+      "id": "HD-028",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "RDP 空闲会话不超时", "en": "RDP idle sessions never time out" },
+      "why": { "zh": "没人操作的会话一直保持已认证状态，等于常开的门。", "en": "An unattended session stays authenticated, which is a door left open." },
+      "fix": { "zh": "MaxIdleTime 设为 15 分钟。", "en": "Set MaxIdleTime to 15 minutes." }
+    },
+    {
+      "id": "HD-029",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "登录不要求 Ctrl+Alt+Del", "en": "Logon does not require Ctrl+Alt+Del" },
+      "why": { "zh": "这个组合键能证明输入来自真实键盘，防止登录界面被伪造。", "en": "The key combination proves input came from a real keyboard, which defeats a faked logon screen." },
+      "fix": { "zh": "DisableCAD 设为 0。", "en": "Set DisableCAD to 0." }
+    },
+    {
+      "id": "HD-030",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "登录界面显示上次用户名", "en": "Logon screen shows the last username" },
+      "why": { "zh": "省掉猜账号这一步，爆破直接从密码开始。", "en": "It removes the account guess and lets brute force start at the password." },
+      "fix": { "zh": "DontDisplayLastUserName 设为 1。", "en": "Set DontDisplayLastUserName to 1." }
+    },
+    {
+      "id": "HD-031",
+      "domain": "hardening",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "关机不清理页面文件", "en": "Pagefile is not cleared at shutdown" },
+      "why": { "zh": "内存里的东西会留在磁盘上，冷启动攻击或拆盘都能读。", "en": "Memory contents stay on disk, readable by a cold-boot attack or by pulling the drive." },
+      "fix": { "zh": "ClearPageFileAtShutdown 设为 1。", "en": "Set ClearPageFileAtShutdown to 1." }
     }
   ]
 }

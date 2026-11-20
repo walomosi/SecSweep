@@ -1,19 +1,5 @@
-﻿# Persistence surface. This is where intrusions actually live; seven location families checked together.
-
-function Test-PathUserWritable {
-    param([string]$ExePath, $Whitelist)
-
-    if (-not $ExePath) { return $false }
-    foreach ($prefix in @($Whitelist.path_prefixes)) {
-        if ($ExePath.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) { return $false }
-    }
-    $lower = $ExePath
-    if ($lower -match '(?i)^[A-Z]:\\Users\\') { return $true }
-    if ($lower -match '(?i)\\Desktop\\') { return $true }
-    if ($lower -match '(?i)\\Temp\\') { return $true }
-    if ($lower -match '(?i)^[A-Z]:\\ProgramData\\') { return $true }
-    return $false
-}
+﻿# Persistence surface. This is where intrusions actually live; location families checked together.
+# Test-PathUserWritable lives in lib/paths.ps1 so services can run without this file.
 
 function Get-RunValues {
     $keys = @(
