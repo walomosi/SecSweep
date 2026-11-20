@@ -317,6 +317,69 @@
       "fix": { "zh": "核对安装来源，必要时卸载。", "en": "Verify the install source, uninstall if unknown." }
     },
     {
+      "id": "DR-001",
+      "domain": "drivers",
+      "severity": 4,
+      "reversible": false,
+      "title": { "zh": "驱动从系统目录之外加载", "en": "Driver loads from outside the system directory" },
+      "why": { "zh": "签名有效的第三方驱动常见于虚拟化和杀软，但也可能被放进 ProgramData 躲检查。", "en": "A signed third-party driver is normal for virtualisation and AV, but one parked in ProgramData is hiding." },
+      "fix": { "zh": "核对签名主体和厂商，不认识的停用对应服务。", "en": "Check the signer and vendor; disable the service if unknown." }
+    },
+    {
+      "id": "DR-002",
+      "domain": "drivers",
+      "severity": 2,
+      "reversible": false,
+      "title": { "zh": "驱动登记的文件不存在", "en": "Driver points at a missing file" },
+      "why": { "zh": "残留的服务登记，本身无害，但会让排查清单变脏。", "en": "A leftover service registration; harmless, but it pollutes the list." },
+      "fix": { "zh": "确认无用后 sc delete 删除对应服务。", "en": "Delete the service once confirmed unused." }
+    },
+    {
+      "id": "DR-003",
+      "domain": "drivers",
+      "severity": 5,
+      "reversible": false,
+      "title": { "zh": "驱动签名无效", "en": "Driver signature is not valid" },
+      "why": { "zh": "内核态没有用户态那些缓解措施，一个无效签名的驱动等于整机失守。", "en": "Kernel mode has none of the user-mode mitigations; an invalid signature is game over." },
+      "fix": { "zh": "立即停用该驱动并保留文件做取证分析。", "en": "Disable the driver now and preserve the file for analysis." }
+    },
+    {
+      "id": "DR-004",
+      "domain": "drivers",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "易受攻击驱动阻止列表未启用", "en": "Vulnerable driver blocklist is off" },
+      "why": { "zh": "BYOVD 攻击专门找这类旧驱动，阻止列表是最省事的一道闸。", "en": "BYOVD attacks hunt exactly these old drivers; the blocklist is the cheapest gate." },
+      "fix": { "zh": "VulnerableDriverBlocklistEnable 设为 1。", "en": "Set VulnerableDriverBlocklistEnable to 1." }
+    },
+    {
+      "id": "DR-005",
+      "domain": "drivers",
+      "severity": 4,
+      "reversible": true,
+      "title": { "zh": "测试签名模式开启", "en": "Test signing mode is on" },
+      "why": { "zh": "这个开关原本给驱动开发者用，留着等于给自签驱动开门。", "en": "Meant for driver developers; left on, it lets self-signed drivers through." },
+      "fix": { "zh": "bcdedit /set testsigning off 后重启。", "en": "bcdedit /set testsigning off, then reboot." }
+    },
+    {
+      "id": "DR-006",
+      "domain": "drivers",
+      "severity": 3,
+      "reversible": true,
+      "title": { "zh": "内核调试已启用", "en": "Kernel debugging is enabled" },
+      "why": { "zh": "调试通道能让本地内核内存被读写，正常使用不该开。", "en": "The debug channel allows reading and writing kernel memory; normal use never needs it." },
+      "fix": { "zh": "bcdedit /debug off 后重启。", "en": "bcdedit /debug off, then reboot." }
+    },
+    {
+      "id": "DR-007",
+      "domain": "drivers",
+      "severity": 2,
+      "reversible": true,
+      "title": { "zh": "HVCI 未启用", "en": "HVCI is not enabled" },
+      "why": { "zh": "虚拟化层做代码完整性校验，脏的内核页写不进去。", "en": "Code integrity enforced in the virtualisation layer, so dirty kernel pages cannot be written." },
+      "fix": { "zh": "HypervisorEnforcedCodeIntegrity\\Enabled 设为 1，重启生效。", "en": "Set HypervisorEnforcedCodeIntegrity\\Enabled to 1 and reboot." }
+    },
+    {
       "id": "BL-001",
       "domain": "baseline",
       "severity": 3,

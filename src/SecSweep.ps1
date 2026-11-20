@@ -13,7 +13,7 @@
 param(
     [string]$OutDir,
     [ValidateSet('auto', 'zh-CN', 'en-US')][string]$Lang = 'auto',
-    [string[]]$Domains = @('accounts', 'persistence', 'services', 'network', 'processes', 'hardening', 'files', 'credentials', 'events', 'software', 'baseline'),
+    [string[]]$Domains = @('accounts', 'persistence', 'services', 'network', 'drivers', 'processes', 'hardening', 'files', 'credentials', 'events', 'software', 'baseline'),
     [switch]$Fix,
     [switch]$Apply,
     [switch]$IncludeRaw,
