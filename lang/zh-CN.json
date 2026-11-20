@@ -1,4 +1,4 @@
-{
+﻿{
   "meta": { "code": "zh-CN", "name": "简体中文" },
   "cli": {
     "banner": "SecSweep 本机安全体检",
@@ -18,6 +18,7 @@
     "fix_undo": "回滚脚本：{0}",
     "fix_none": "没有可自动处置的项目。",
     "readonly": "只读模式，未修改任何系统配置。",
+    "hygiene": "加固建议",
     "done": "完成",
     "error": "出错"
   },
@@ -31,8 +32,9 @@
   "domains": {
     "accounts": "账户与权限",
     "persistence": "持久化点",
-    "services": "服务与驱动",
+    "services": "服务",
     "network": "网络暴露面",
+    "drivers": "驱动与内核",
     "processes": "进程与签名",
     "hardening": "系统加固",
     "files": "文件落地",

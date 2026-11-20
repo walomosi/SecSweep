@@ -4,6 +4,36 @@ $script:GradeThresholdA = 90
 $script:GradeThresholdB = 75
 $script:GradeThresholdC = 50
 
+# A hit here means the box could be hardened further, not that something already went
+# wrong on it. Counting them at full weight is how a stock server ends up graded as
+# compromised just for having autoplay on.
+$script:HygieneRuleIds = @(
+    'HD-004', 'HD-005', 'HD-006', 'HD-007', 'HD-008', 'HD-009', 'HD-010', 'HD-011',
+    'HD-012', 'HD-013', 'HD-014', 'HD-015', 'HD-016', 'HD-017', 'HD-018', 'HD-019',
+    'HD-020', 'HD-021', 'HD-022', 'HD-023', 'HD-024', 'HD-025', 'HD-026', 'HD-027',
+    'HD-028', 'HD-029', 'HD-030', 'HD-031',
+    'AC-006', 'AC-007', 'AC-008', 'AC-009', 'AC-010', 'AC-011', 'AC-012', 'AC-013',
+    'SV-006', 'SV-007', 'SV-008', 'SV-009', 'SV-010', 'SV-011', 'SV-012',
+    'DR-004', 'DR-007'
+)
+
+function Test-HygieneRule {
+    param([string]$RuleId)
+
+    return ($script:HygieneRuleIds -contains $RuleId)
+}
+
+function Get-HygieneSummary {
+    param($Findings)
+
+    $hit = @{}
+    foreach ($f in @($Findings)) {
+        $id = [string]$f.RuleId
+        if (Test-HygieneRule $id) { $hit[$id] = $true }
+    }
+    return [pscustomobject]@{ Hit = $hit.Count; Total = $script:HygieneRuleIds.Count }
+}
+
 function Merge-Whitelist {
     param($Base, $Extra)
 
@@ -234,11 +264,16 @@ function Get-SweepScore {
     }
 
     # Linear penalty ignores severity; 2^(sev-2) is what makes a 5 actually hurt.
+    # Hygiene gaps are capped at six points together, so they inform without burying
+    # whatever the real findings are.
     $penalty = 0
-    foreach ($sev in $worst.Values) {
-        $penalty += [math]::Pow(2, ($sev - 2))
+    $hygienePenalty = 0
+    foreach ($ruleId in $worst.Keys) {
+        $p = [math]::Pow(2, ($worst[$ruleId] - 2))
+        if (Test-HygieneRule $ruleId) { $hygienePenalty += $p } else { $penalty += $p }
     }
-    $score = 100 - [int][math]::Round($penalty)
+    if ($hygienePenalty -gt 6) { $hygienePenalty = 6 }
+    $score = 100 - [int][math]::Round($penalty + $hygienePenalty)
     if ($score -lt 0) { return 0 }
     return $score
 }

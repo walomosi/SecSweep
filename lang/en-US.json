@@ -1,4 +1,4 @@
-{
+﻿{
   "meta": { "code": "en-US", "name": "English" },
   "cli": {
     "banner": "SecSweep local security check",
@@ -18,6 +18,7 @@
     "fix_undo": "Undo script: {0}",
     "fix_none": "Nothing to auto-remediate.",
     "readonly": "Read-only mode, no system change was made.",
+    "hygiene": "Hardening gaps",
     "done": "Done",
     "error": "Error"
   },
@@ -31,8 +32,9 @@
   "domains": {
     "accounts": "Accounts",
     "persistence": "Persistence",
-    "services": "Services & drivers",
+    "services": "Services",
     "network": "Network exposure",
+    "drivers": "Drivers",
     "processes": "Processes & signatures",
     "hardening": "Hardening",
     "files": "Dropped files",

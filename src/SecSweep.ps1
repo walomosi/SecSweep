@@ -27,6 +27,7 @@ $libDir = Join-Path $PSScriptRoot 'lib'
 $checkDir = Join-Path $PSScriptRoot 'checks'
 
 . (Join-Path $libDir 'i18n.ps1')
+. (Join-Path $libDir 'paths.ps1')
 . (Join-Path $libDir 'report.ps1')
 
 $langCode = Resolve-UiLanguage -Requested $Lang -LangDir (Join-Path $rootDir 'lang')
@@ -84,7 +85,9 @@ foreach ($d in $domainList) {
 $score = Get-SweepScore -Findings $findings
 $grade = Get-SweepGrade -Score $score
 $gradeInfo = $uiText.grade.PSObject.Properties[$grade].Value
+$hygiene = Get-HygieneSummary -Findings $findings
 Write-Host ("{0}: {1}   {2}: {3} ({4})" -f $uiText.cli.score, $score, $uiText.cli.grade, $grade, $gradeInfo.label)
+Write-Host ("{0}: {1}/{2}" -f $uiText.cli.hygiene, $hygiene.Hit, $hygiene.Total)
 
 $targetOut = $OutDir
 if (-not $targetOut) { $targetOut = Join-Path $rootDir 'out' }
