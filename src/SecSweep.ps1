@@ -1,9 +1,9 @@
 ﻿<#
 .SYNOPSIS
-    本机安全体检：只读扫描，输出 HTML 与 JSON 报告。
+    Read-only local security sweep. Writes an HTML and a JSON report.
 .DESCRIPTION
-    默认不改任何系统配置。加 -Fix 才会列出可逆处置动作。
-    报告与中间数据全部留在本地，代码里没有任何出站请求。
+    Nothing on this machine gets changed unless -Fix is passed.
+    Every result stays on disk locally; there is no outbound request anywhere in the code.
 .EXAMPLE
     .\SecSweep.ps1
 .EXAMPLE
@@ -32,7 +32,7 @@ $langCode = Resolve-UiLanguage -Requested $Lang -LangDir (Join-Path $rootDir 'la
 $uiText = Import-UiText -Code $langCode -LangDir (Join-Path $rootDir 'lang')
 $ctx = New-SweepContext -RootDir $rootDir -RulesDir (Join-Path $rootDir 'rules') -Text $uiText -LangCode $langCode -IncludeRaw:$IncludeRaw
 
-# 外部传参时 accounts,services 会被压成一个字符串，这里统一拆开
+# Native callers hand -Domains over as one comma-joined string; split it back.
 $domainList = @()
 foreach ($raw in @($Domains)) {
     foreach ($piece in ($raw -split ',')) {
@@ -45,9 +45,9 @@ Write-Host ("=== {0} ===" -f $uiText.cli.banner)
 Write-Host ("{0}: {1}" -f $uiText.cli.lang, $uiText.meta.name)
 
 if ($SaveBaseline) {
-    # 基线只写一次，写完就退，不用继续扫
+    # One-shot write, then out.
     $baselineScript = Join-Path $checkDir 'baseline.ps1'
-    if (-not (Test-Path -LiteralPath $baselineScript)) { throw '找不到 baseline.ps1' }
+    if (-not (Test-Path -LiteralPath $baselineScript)) { throw 'baseline.ps1 not found next to the other checks' }
     . $baselineScript
     $written = Save-SweepBaseline -RootDir $rootDir
     Write-Host ('baseline: ' + $written)

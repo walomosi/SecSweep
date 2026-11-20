@@ -1,8 +1,23 @@
-﻿# 报告与评分。检查函数只产出事实，判读和文案都在这里做，便于单独调整。
+﻿# Report rendering and scoring. Checks only collect facts; wording, grading and layout live here so they can be tuned without touching detectors.
 
 $script:GradeThresholdA = 90
 $script:GradeThresholdB = 75
 $script:GradeThresholdC = 50
+
+function Merge-Whitelist {
+    param($Base, $Extra)
+
+    $keys = @('accounts', 'path_prefixes', 'service_names', 'task_paths', 'process_names', 'unsigned_ok', 'known_listen_ports')
+    $merged = [ordered]@{}
+    foreach ($k in $keys) {
+        $merged[$k] = @()
+        $bp = $Base.PSObject.Properties[$k]
+        if ($bp) { $merged[$k] += @($bp.Value) }
+        $ep = $Extra.PSObject.Properties[$k]
+        if ($ep) { $merged[$k] += @($ep.Value) }
+    }
+    return [pscustomobject]$merged
+}
 
 function New-SweepContext {
     param(
@@ -22,6 +37,12 @@ function New-SweepContext {
     if (-not $Whitelist) {
         $wlRaw = [System.IO.File]::ReadAllText((Join-Path $RulesDir 'whitelist.json'), [System.Text.Encoding]::UTF8)
         $Whitelist = $wlRaw | ConvertFrom-Json
+        # Machine-specific noise lives in whitelist.local.json, which never goes into git.
+        $localPath = Join-Path $RulesDir 'whitelist.local.json'
+        if (Test-Path -LiteralPath $localPath) {
+            $localRaw = [System.IO.File]::ReadAllText($localPath, [System.Text.Encoding]::UTF8)
+            $Whitelist = Merge-Whitelist -Base $Whitelist -Extra ($localRaw | ConvertFrom-Json)
+        }
     }
 
     return @{
@@ -126,9 +147,7 @@ function New-SweepReport {
     $jsonText = $jsonDoc | ConvertTo-Json -Depth 6
     [System.IO.File]::WriteAllText($jsonPath, $jsonText, (New-Object System.Text.UTF8Encoding($false)))
 
-    $body = New-ReportBody -Ctx $Ctx -Findings $Findings -KeepRaw ([bool]$KeepRaw) -AltText $altText
-    $style = New-ReportStyle
-    # 报告里要两门语言的文案，另一份包只用来填 data-en / data-zh
+    # Load the other language pack first — the HTML body embeds both sides in data-zh / data-en.
     $altText = $null
     $altCode = 'en-US'
     if ($Ctx.LangCode -eq 'en-US') { $altCode = 'zh-CN' }
@@ -137,6 +156,9 @@ function New-SweepReport {
         $altRaw = [System.IO.File]::ReadAllText($altPath, [System.Text.Encoding]::UTF8)
         $altText = $altRaw | ConvertFrom-Json
     }
+
+    $body = New-ReportBody -Ctx $Ctx -Findings $Findings -KeepRaw ([bool]$KeepRaw) -AltText $altText
+    $style = New-ReportStyle
 
     $gradeNode = $Ctx.Text.grade.PSObject.Properties[$Grade].Value
     $gradeLabel = [string]$gradeNode.label
@@ -153,6 +175,7 @@ function New-SweepReport {
     $generated = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
     $hostText = ConvertTo-HtmlSafe (ConvertTo-Masked $HostName ([bool]$KeepRaw))
 
+    # Those hardcoded zh/en pairs below are the anchors for the toggle; they are data, not text needing translation.
     $htmlDoc = @"
 <!DOCTYPE html>
 <html lang="$(ConvertTo-HtmlSafe $Ctx.LangCode)">
@@ -192,10 +215,9 @@ function ConvertTo-Masked {
 
     if ($KeepRaw -or -not $Value) { return $Value }
     $out = $Value
-    # 账户名与主机名换掉，报告可能被截图发出去
+    # Reports get screenshotted and pasted around; names do not belong in them by default.
     if ($env:USERNAME) { $out = $out -replace [regex]::Escape($env:USERNAME), '<user>' }
     if ($env:COMPUTERNAME) { $out = $out -replace [regex]::Escape($env:COMPUTERNAME), '<host>' }
-    # IPv4 只留前两段，用来判断内外网足够
     $out = [regex]::Replace($out, '\b(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\b', '$1.$2.x.x')
     return $out
 }
@@ -203,7 +225,7 @@ function ConvertTo-Masked {
 function Get-SweepScore {
     param($Findings)
 
-    # 同一规则命中多次算一个问题，否则十条小毛病会把分数压成 0
+    # One rule firing ten times is one problem. Counting each hit is how you turn a noisy box into 0 points.
     $worst = @{}
     foreach ($f in @($Findings)) {
         $ruleId = [string]$f.RuleId
@@ -211,7 +233,7 @@ function Get-SweepScore {
         if (-not $worst.ContainsKey($ruleId) -or $worst[$ruleId] -lt $sev) { $worst[$ruleId] = $sev }
     }
 
-    # 线性扣分对严重度不敏感，2^(sev-2) 让 5 分项真正拉开差距
+    # Linear penalty ignores severity; 2^(sev-2) is what makes a 5 actually hurt.
     $penalty = 0
     foreach ($sev in $worst.Values) {
         $penalty += [math]::Pow(2, ($sev - 2))
@@ -309,7 +331,7 @@ function New-FindingsJson {
 function Get-FixCandidates {
     param($Ctx, $Findings)
 
-    # 只挑规则里标了 reversible 的，不可逆的一律不自动动
+    # Only rules flagged reversible get an action. Irreversible ones stay informational on purpose.
     $list = @()
     foreach ($f in @($Findings)) {
         $rule = $Ctx.RuleIndex[$f.RuleId]
@@ -317,9 +339,9 @@ function Get-FixCandidates {
         if (-not $rule.reversible) { continue }
         if ($f.FixAction) {
             $list += [pscustomobject]@{
-                rule   = $f.RuleId
+                rule    = $f.RuleId
                 subject = $f.Subject
-                action = $f.FixAction
+                action  = $f.FixAction
             }
         }
     }

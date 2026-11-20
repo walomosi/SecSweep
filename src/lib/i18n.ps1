@@ -1,4 +1,4 @@
-﻿# 语言处理。语言包放在 lang/ 下，加一门语言只需丢一个 json 进去，不动代码。
+﻿# Language packs live under lang/. Adding one is dropping a json file there, no code change.
 
 function Resolve-UiLanguage {
     param(
@@ -7,16 +7,16 @@ function Resolve-UiLanguage {
     )
 
     if (-not (Test-Path -LiteralPath $LangDir)) {
-        throw "语言目录不存在：$LangDir"
+        throw "Language directory not found: $LangDir"
     }
     $available = @(Get-ChildItem -LiteralPath $LangDir -Filter '*.json' -File |
         ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_.Name) })
     if ($available.Count -eq 0) {
-        throw "语言目录里没有 json：$LangDir"
+        throw "No language pack json in: $LangDir"
     }
 
     if (-not $Requested -or $Requested -eq 'auto') {
-        # 系统语言只用来挑默认值，挑不到就落到列表第一个，不静默改用户的选择
+        # System culture only picks the default; an explicit request is never silently overridden.
         $culture = ''
         try { $culture = (Get-UICulture).Name } catch { $culture = '' }
         if ($culture -match '^zh') { $pick = 'zh-CN' } else { $pick = 'en-US' }
@@ -25,7 +25,7 @@ function Resolve-UiLanguage {
     }
 
     if ($available -notcontains $Requested) {
-        throw "没有这个语言包：$Requested（可用：$($available -join ', ')）"
+        throw "Unknown language pack: $Requested (available: $($available -join ', '))"
     }
     return $Requested
 }
@@ -37,7 +37,7 @@ function Import-UiText {
     )
 
     $path = Join-Path $LangDir ($Code + '.json')
-    # 用 .NET 直读：PS5.1 会把无 BOM 的 UTF-8 当 ANSI，中文会断
+    # Read through .NET: PS5.1 decodes BOM-less UTF-8 as ANSI and eats the CJK.
     $raw = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
     return ($raw | ConvertFrom-Json)
 }
